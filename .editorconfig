@@ -1,0 +1,83 @@
+# EditorConfig文件，用于统一项目的编码和格式设置
+# 官方网站：https://editorconfig.org/
+
+# 这是顶级EditorConfig文件
+root = true
+
+# 所有文件的默认设置
+[*]
+# 字符集设置为UTF-8，确保中文字符正确显示
+charset = utf-8
+# 行尾符设置为LF（Unix风格）
+end_of_line = lf
+# 文件末尾插入新行
+insert_final_newline = true
+# 移除行尾空白字符
+trim_trailing_whitespace = true
+
+# C#文件设置
+[*.cs]
+# 使用4个空格缩进
+indent_style = space
+indent_size = 4
+# 字符集UTF-8
+charset = utf-8
+
+# Razor文件设置
+[*.{razor,cshtml}]
+indent_style = space
+indent_size = 4
+charset = utf-8
+
+# 配置文件设置
+[*.{json,xml,config}]
+indent_style = space
+indent_size = 2
+charset = utf-8
+
+# 前端文件设置
+[*.{js,ts,css,scss,html}]
+indent_style = space
+indent_size = 2
+charset = utf-8
+
+# Markdown文件设置
+[*.md]
+indent_style = space
+indent_size = 2
+charset = utf-8
+# Markdown文件保留行尾空白（某些情况下需要）
+trim_trailing_whitespace = false
+
+# 文本文件设置
+[*.txt]
+charset = utf-8
+
+# SQL文件设置
+[*.sql]
+indent_style = space
+indent_size = 4
+charset = utf-8
+
+# PowerShell脚本设置
+[*.ps1]
+indent_style = space
+indent_size = 4
+charset = utf-8
+
+# 批处理文件设置
+[*.{bat,cmd}]
+charset = utf-8
+end_of_line = crlf
+
+# 项目文件设置
+[*.{csproj,sln,props,targets}]
+indent_style = space
+indent_size = 2
+charset = utf-8
+
+# 特殊文件设置
+[{*.yml,*.yaml}]
+indent_style = space
+indent_size = 2
+charset = utf-8 

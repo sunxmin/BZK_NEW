@@ -1,0 +1,74 @@
+@{
+    ViewData["Title"] = "数据初始化状态检查";
+}
+
+<div class="container mt-4">
+    <h2>数据初始化状态检查</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>测试用户状态</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary" onclick="checkDataStatus()">检查数据状态</button>
+                    <button class="btn btn-warning" onclick="reinitializeData()">重新初始化数据</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>快速测试</h5>
+                </div>
+                <div class="card-body">
+                    <a href="/Account/TestLogin" class="btn btn-success">测试登录</a>
+                    <a href="/QueryBuilder" class="btn btn-info">查询构建器</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>检查结果</h5>
+                </div>
+                <div class="card-body">
+                    <pre id="result" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; min-height: 200px;">
+点击"检查数据状态"按钮查看结果...
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function checkDataStatus() {
+    try {
+        const response = await fetch('/Debug/CheckDataStatus');
+        const data = await response.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+        document.getElementById('result').textContent = '错误: ' + error.message;
+    }
+}
+
+async function reinitializeData() {
+    try {
+        const response = await fetch('/Debug/ReinitializeData');
+        const data = await response.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        
+        if (data.success) {
+            alert('数据重新初始化成功！');
+        }
+    } catch (error) {
+        document.getElementById('result').textContent = '错误: ' + error.message;
+    }
+}
+</script> 

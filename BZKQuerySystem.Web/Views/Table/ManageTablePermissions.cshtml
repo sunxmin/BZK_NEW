@@ -1,0 +1,135 @@
+@model TablePermissionViewModel
+@{
+    ViewData["Title"] = "管理表权限";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-key"></i> 管理表权限</h2>
+            <p class="lead">为表 <strong>@Model.TableInfo.TableName</strong> 设置用户访问权限</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回表列表
+            </a>
+        </div>
+    </div>
+
+    @if (!ViewContext.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <h5><i class="fas fa-exclamation-triangle"></i> 提交表单时出现错误：</h5>
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-table"></i> 表信息: @Model.TableInfo.DisplayName
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">表名:</label>
+                    <p><strong>@Model.TableInfo.TableName</strong></p>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">显示名称:</label>
+                    <p><strong>@Model.TableInfo.DisplayName</strong></p>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">描述:</label>
+                    <p>@Model.TableInfo.Description</p>
+                </div>
+            </div>
+
+            <hr />
+
+            <form asp-action="SaveTablePermissions" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="TableInfo.Id" />
+                <input type="hidden" asp-for="TableInfo.TableName" />
+                <input type="hidden" asp-for="TableInfo.DisplayName" />
+                <input type="hidden" asp-for="TableInfo.Description" />
+                <input type="hidden" name="TableInfo.Columns" value="[]" />
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th width="70%">用户</th>
+                                <th width="30%" class="text-center">
+                                    可查看
+                                    <div class="form-check d-inline-block ms-2">
+                                        <input class="form-check-input" type="checkbox" id="selectAllCanRead" />
+                                        <label class="form-check-label small" for="selectAllCanRead">全选/取消</label>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.UserPermissions.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user me-2"></i>
+                                            <span>@Model.UserPermissions[i].DisplayName <small class="text-muted">(@Model.UserPermissions[i].UserName)</small></span>
+                                        </div>
+                                        <input type="hidden" name="UserPermissions[@i].UserId" value="@Model.UserPermissions[i].UserId" />
+                                        <input type="hidden" name="UserPermissions[@i].UserName" value="@Model.UserPermissions[i].UserName" />
+                                        <input type="hidden" name="UserPermissions[@i].DisplayName" value="@Model.UserPermissions[i].DisplayName" />
+                                        <input type="hidden" name="UserPermissions[@i].TableName" value="@Model.UserPermissions[i].TableName" />
+                                        <input type="hidden" name="UserPermissions[@i].CanExport" value="false" />
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="form-check d-flex justify-content-center">
+                                            <input class="form-check-input canread-checkbox" type="checkbox" name="UserPermissions[@i].CanRead" value="true" checked="@Model.UserPermissions[i].CanRead" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary me-2">
+                        <i class="fas fa-times"></i> 取消
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存权限
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 添加全选功能
+            $('#selectAllCanRead').change(function() {
+                $('.canread-checkbox').prop('checked', $(this).prop('checked'));
+            });
+            
+            // 当单个复选框状态变化时，检查是否需要更新全选复选框
+            $('.canread-checkbox').change(function() {
+                updateSelectAllCheckbox();
+            });
+            
+            // 页面加载时检查全选状态
+            updateSelectAllCheckbox();
+            
+            // 更新全选复选框状态的函数
+            function updateSelectAllCheckbox() {
+                var allChecked = $('.canread-checkbox:checked').length === $('.canread-checkbox').length;
+                $('#selectAllCanRead').prop('checked', allChecked);
+            }
+        });
+    </script>
+} 

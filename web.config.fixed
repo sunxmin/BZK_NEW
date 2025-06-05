@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <location path="." inheritInChildApplications="false">
+    <system.webServer>
+      <!-- ASP.NET Core Module配置 - 修复版本 -->
+      <handlers>
+        <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModule" resourceType="Unspecified" />
+      </handlers>
+
+      <aspNetCore processPath="dotnet"
+                  arguments=".\BZKQuerySystem.Web.dll"
+                  stdoutLogEnabled="true"
+                  stdoutLogFile=".\logs\stdout"
+                  hostingModel="outofprocess">
+
+        <!-- 环境变量 -->
+        <environmentVariables>
+          <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
+        </environmentVariables>
+      </aspNetCore>
+
+      <!-- 安全配置 -->
+      <security>
+        <requestFiltering>
+          <!-- 允许上传大文件 -->
+          <requestLimits maxAllowedContentLength="52428800" />
+        </requestFiltering>
+      </security>
+
+      <!-- HTTP响应头 -->
+      <httpProtocol>
+        <customHeaders>
+          <!-- 安全头 -->
+          <add name="X-Content-Type-Options" value="nosniff" />
+          <add name="X-Frame-Options" value="SAMEORIGIN" />
+          <add name="X-XSS-Protection" value="1; mode=block" />
+        </customHeaders>
+      </httpProtocol>
+
+      <!-- 静态内容配置 -->
+      <staticContent>
+        <!-- 移除默认的扩展映射并添加新的 -->
+        <remove fileExtension=".woff" />
+        <remove fileExtension=".woff2" />
+        <mimeMap fileExtension=".woff" mimeType="application/font-woff" />
+        <mimeMap fileExtension=".woff2" mimeType="font/woff2" />
+      </staticContent>
+
+      <!-- 错误页面 -->
+      <httpErrors errorMode="Custom" defaultResponseMode="ExecuteURL">
+        <remove statusCode="404" subStatusCode="-1" />
+        <error statusCode="404" path="/Home/NotFound" responseMode="ExecuteURL" />
+        <remove statusCode="500" subStatusCode="-1" />
+        <error statusCode="500" path="/Home/Error" responseMode="ExecuteURL" />
+      </httpErrors>
+
+    </system.webServer>
+  </location>
+</configuration>

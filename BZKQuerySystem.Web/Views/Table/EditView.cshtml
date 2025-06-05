@@ -1,0 +1,76 @@
+@model BZKQuerySystem.Web.Controllers.EditViewViewModel
+@{
+    ViewData["Title"] = "编辑视图";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>编辑视图 - @Model.ViewName</h2>
+            <p class="text-muted">修改视图的SQL定义。</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">SQL定义</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditView" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <input type="hidden" asp-for="ViewName" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="SqlDefinition" class="form-label">SQL定义</label>
+                            <textarea asp-for="SqlDefinition" class="form-control" rows="20" style="font-family: monospace;"></textarea>
+                            <span asp-validation-for="SqlDefinition" class="text-danger"></span>
+                            <div class="form-text">
+                                输入完整的CREATE VIEW语句。例如：<br>
+                                <code>CREATE VIEW vw_Example AS SELECT * FROM TableA WHERE Column1 > 10</code>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> 警告：更新视图会首先删除现有视图，然后使用新的SQL定义创建视图。请确保SQL语法正确。
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Views" class="btn btn-secondary">返回列表</a>
+                            <button type="submit" class="btn btn-primary">更新视图</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // 简单增强textarea为代码编辑器
+        $(document).ready(function() {
+            // 设置tab键在textarea中插入制表符而不是切换焦点
+            $('#SqlDefinition').on('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    
+                    // 获取当前光标位置
+                    var start = this.selectionStart;
+                    var end = this.selectionEnd;
+                    
+                    // 设置新值（在光标位置插入制表符）
+                    $(this).val($(this).val().substring(0, start) + 
+                                '    ' + 
+                                $(this).val().substring(end));
+                    
+                    // 重新设置光标位置
+                    this.selectionStart = this.selectionEnd = start + 4;
+                }
+            });
+        });
+    </script>
+} 

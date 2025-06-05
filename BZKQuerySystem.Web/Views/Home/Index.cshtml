@@ -1,0 +1,480 @@
+﻿@{
+    ViewData["Title"] = "首页";
+}
+
+<!-- 欢迎区域 -->
+<div class="welcome-section mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h2 class="mb-2">
+                <i class="fas fa-user-circle text-primary me-2"></i>
+                欢迎回来，@(User.FindFirst("DisplayName")?.Value ?? User.Identity.Name)
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="far fa-clock me-1"></i>
+                今天是 @DateTime.Now.ToString("yyyy年MM月dd日 dddd")
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="quick-stats">
+                <small class="text-muted">当前登录时间</small>
+                <div class="h5 text-primary mb-0">@DateTime.Now.ToString("HH:mm")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速功能入口 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="section-title">
+            <i class="fas fa-bolt text-warning me-2"></i>
+            快速功能
+        </h4>
+        <div class="row g-3">
+            <!-- 数据查询 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="function-card h-100">
+                    <div class="function-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5>数据查询</h5>
+                    <p class="small text-muted">可视化查询构建器</p>
+                    <a asp-controller="QueryBuilder" asp-action="Index" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play me-1"></i>开始查询
+                    </a>
+                </div>
+            </div>
+
+            <!-- 已保存查询 -->
+            @if (User.HasClaim("Permission", "SaveQueries") || User.HasClaim("Permission", "SystemAdmin"))
+            {
+                <div class="col-md-6 col-lg-3">
+                    <div class="function-card h-100">
+                        <div class="function-icon">
+                            <i class="fas fa-bookmark"></i>
+                        </div>
+                        <h5>我的查询</h5>
+                        <p class="small text-muted">查看已保存的查询</p>
+                        <a asp-controller="QueryBuilder" asp-action="SavedQueries" class="btn btn-success btn-sm">
+                            <i class="fas fa-list me-1"></i>查看列表
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <!-- 数据导出 -->
+            @if (User.HasClaim("Permission", "ExportData") || User.HasClaim("Permission", "SystemAdmin"))
+            {
+                <div class="col-md-6 col-lg-3">
+                    <div class="function-card h-100">
+                        <div class="function-icon">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <h5>数据导出</h5>
+                        <p class="small text-muted">Excel、PDF格式导出</p>
+                        <a asp-controller="QueryBuilder" asp-action="Index" class="btn btn-info btn-sm">
+                            <i class="fas fa-download me-1"></i>去导出
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <!-- 系统管理 -->
+            @if (User.HasClaim("Permission", "SystemAdmin"))
+            {
+                <div class="col-md-6 col-lg-3">
+                    <div class="function-card h-100">
+                        <div class="function-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h5>系统管理</h5>
+                        <p class="small text-muted">用户和权限管理</p>
+                        <a asp-controller="User" asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-users me-1"></i>管理面板
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 功能介绍与统计信息 -->
+<div class="row mb-4">
+    <!-- 系统功能介绍 -->
+    <div class="col-lg-8">
+        <h4 class="section-title">
+            <i class="fas fa-info-circle text-info me-2"></i>
+            系统功能
+        </h4>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <div class="feature-icon-small">
+                    <i class="fas fa-magic text-primary"></i>
+                </div>
+                <div class="feature-content">
+                    <h6>可视化查询构建</h6>
+                    <small class="text-muted">无需编写SQL，通过点击和选择构建复杂查询</small>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon-small">
+                    <i class="fas fa-link text-success"></i>
+                </div>
+                <div class="feature-content">
+                    <h6>多表关联查询</h6>
+                    <small class="text-muted">支持内连接、左连接、右连接、全连接</small>
+                </div>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon-small">
+                    <i class="fas fa-chart-bar text-info"></i>
+                </div>
+                <div class="feature-content">
+                    <h6>数据可视化</h6>
+                    <small class="text-muted">柱状图、折线图、饼图等多种图表类型</small>
+                </div>
+            </div>
+
+            @if (User.HasClaim("Permission", "ExportData") || User.HasClaim("Permission", "SystemAdmin"))
+            {
+                <div class="feature-item">
+                    <div class="feature-icon-small">
+                        <i class="fas fa-file-export text-warning"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h6>多格式导出</h6>
+                        <small class="text-muted">Excel和PDF格式，支持大数据量导出</small>
+                    </div>
+                </div>
+            }
+
+            @if (User.HasClaim("Permission", "ShareQueries") || User.HasClaim("Permission", "SystemAdmin"))
+            {
+                <div class="feature-item">
+                    <div class="feature-icon-small">
+                        <i class="fas fa-share-alt text-purple"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h6>查询分享</h6>
+                        <small class="text-muted">保存查询方案并与团队成员分享</small>
+                    </div>
+                </div>
+            }
+
+            <div class="feature-item">
+                <div class="feature-icon-small">
+                    <i class="fas fa-shield-alt text-danger"></i>
+                </div>
+                <div class="feature-content">
+                    <h6>权限控制</h6>
+                    <small class="text-muted">基于角色的访问控制和数据安全</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统状态 -->
+    <div class="col-lg-4">
+        <h4 class="section-title">
+            <i class="fas fa-chart-line text-success me-2"></i>
+            系统状态
+        </h4>
+        <div class="status-card">
+            <div class="status-item">
+                <div class="status-label">系统状态</div>
+                <div class="status-value status-healthy">
+                    <i class="fas fa-check-circle me-1"></i>运行正常
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">数据库连接</div>
+                <div class="status-value status-healthy">
+                    <i class="fas fa-database me-1"></i>连接正常
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">实时通信</div>
+                <div class="status-value status-healthy">
+                    <i class="fas fa-broadcast-tower me-1"></i>SignalR已连接
+                </div>
+            </div>
+
+            @if (User.HasClaim("Permission", "SystemAdmin"))
+            {
+                <div class="mt-3">
+                    <a href="/Monitoring/Dashboard" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-tachometer-alt me-1"></i>查看详细监控
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 快速操作指南 -->
+<div class="row">
+    <div class="col-12">
+        <h4 class="section-title">
+            <i class="fas fa-book-open text-primary me-2"></i>
+            快速上手
+        </h4>
+        <div class="guide-card">
+            <div class="row">
+                <div class="col-md-3 text-center">
+                    <div class="guide-step">
+                        <div class="step-number">1</div>
+                        <div class="step-icon">
+                            <i class="fas fa-table text-primary"></i>
+                        </div>
+                        <h6>选择数据表</h6>
+                        <p class="small text-muted">从可用表列表中选择需要查询的数据表</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="guide-step">
+                        <div class="step-number">2</div>
+                        <div class="step-icon">
+                            <i class="fas fa-columns text-success"></i>
+                        </div>
+                        <h6>选择字段</h6>
+                        <p class="small text-muted">选择需要查询的字段列，可全选或自定义</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="guide-step">
+                        <div class="step-number">3</div>
+                        <div class="step-icon">
+                            <i class="fas fa-filter text-info"></i>
+                        </div>
+                        <h6>设置条件</h6>
+                        <p class="small text-muted">添加筛选条件，支持多种操作符组合</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="guide-step">
+                        <div class="step-number">4</div>
+                        <div class="step-icon">
+                            <i class="fas fa-play-circle text-warning"></i>
+                        </div>
+                        <h6>执行查询</h6>
+                        <p class="small text-muted">运行查询并查看结果，支持导出和可视化</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a asp-controller="QueryBuilder" asp-action="Index" class="btn btn-primary">
+                    <i class="fas fa-rocket me-1"></i>立即开始查询
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 自定义样式 -->
+<style>
+    .welcome-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #007bff;
+    }
+
+    .section-title {
+        margin-bottom: 20px;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 8px;
+    }
+
+    .function-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .function-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-color: #007bff;
+    }
+
+    .function-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 15px;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 15px;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        transition: border-color 0.3s ease;
+    }
+
+    .feature-item:hover {
+        border-color: #007bff;
+    }
+
+    .feature-icon-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .feature-content h6 {
+        margin-bottom: 4px;
+        color: #495057;
+    }
+
+    .status-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    .status-item:last-child {
+        border-bottom: none;
+    }
+
+    .status-label {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .status-value {
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .status-healthy {
+        color: #28a745;
+    }
+
+    .guide-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 30px 20px;
+    }
+
+    .guide-step {
+        position: relative;
+        padding: 20px 10px;
+    }
+
+    .step-number {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 30px;
+        height: 30px;
+        background: #007bff;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .step-icon {
+        margin: 20px 0 15px;
+        font-size: 36px;
+    }
+
+    .guide-step h6 {
+        margin-bottom: 10px;
+        color: #495057;
+    }
+
+    .text-purple {
+        color: #6f42c1 !important;
+    }
+
+    @@media (max-width: 768px) {
+        .function-card {
+            margin-bottom: 15px;
+        }
+        
+        .feature-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-section .col-md-4 {
+            text-align: left !important;
+            margin-top: 15px;
+        }
+    }
+</style>
+
+<!-- 添加动态效果和实时状态检查 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 为功能卡片添加点击反馈
+    document.querySelectorAll('.function-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+
+    // 检查SignalR连接状态（如果已连接）
+    if (typeof signalR !== 'undefined' && window.connection) {
+        const statusElement = document.querySelector('.status-value:last-of-type');
+        if (window.connection.state === signalR.HubConnectionState.Connected) {
+            statusElement.innerHTML = '<i class="fas fa-broadcast-tower me-1"></i>SignalR已连接';
+            statusElement.className = 'status-value status-healthy';
+        } else {
+            statusElement.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>SignalR未连接';
+            statusElement.className = 'status-value text-warning';
+        }
+    }
+});
+</script>

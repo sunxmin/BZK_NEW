@@ -1,0 +1,2 @@
+Sqlcmd: 错误: Microsoft SQL Server Native Client 11.0 : 用户 'HUAWEI-SXM\HUAWEI' 登录失败。。
+Sqlcmd: 错误: Microsoft SQL Server Native Client 11.0 : 无法打开登录所请求的数据库 "BZKQuerySystem"。登录失败。。

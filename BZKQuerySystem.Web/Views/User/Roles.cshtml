@@ -1,0 +1,155 @@
+@model IEnumerable<BZKQuerySystem.DataAccess.ApplicationRole>
+
+@{
+    ViewData["Title"] = "角色管理";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-user-tag"></i> 角色管理</h2>
+            <p class="lead">管理系统角色和权限设置</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="CreateRole" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> 添加角色
+            </a>
+        </div>
+    </div>
+
+    <!-- 显示调试信息 -->
+    @{
+        var tempDataKeys = TempData.Keys.ToList();
+    }
+
+    @* 注释掉调试信息显示
+    @if (TempData["DebugInfo"] != null)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="card-title mb-0"><i class="fas fa-bug"></i> 调试信息</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3" style="max-height: 200px; overflow-y: auto;">@TempData["DebugInfo"]</pre>
+            </div>
+        </div>
+    }
+    *@
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>成功：</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>错误：</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-list"></i> 角色列表</h5>
+            <small>显示系统中所有角色，总计 @Model.Count() 个角色</small>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>角色名称</th>
+                            <th>描述</th>
+                            <th>权限</th>
+                            <th>用户数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var role in Model)
+                        {
+                            <tr>
+                                <td>@role.Name</td>
+                                <td>@role.Description</td>
+                                <td>
+                                    @if (role.RoleClaims != null)
+                                    {
+                                        @foreach (var claim in role.RoleClaims.Take(3))
+                                        {
+                                            <span class="badge bg-info me-1">@claim.ClaimValue</span>
+                                        }
+                                        
+                                        @if (role.RoleClaims.Count > 3)
+                                        {
+                                            <span class="badge bg-secondary">+@(role.RoleClaims.Count - 3)</span>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @(role.UserRoles?.Count ?? 0)
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="EditRole" asp-route-id="@role.Id" class="btn btn-outline-primary">
+                                            <i class="fas fa-edit"></i> 编辑
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" 
+                                                data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
+                                                data-role-id="@role.Id" data-role-name="@role.Name"
+                                                @(role.NormalizedName == "SYSTEMADMIN" ? "disabled" : "")>
+                                            <i class="fas fa-trash-alt"></i> 删除
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除角色确认模态框 -->
+<div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteRoleModalLabel">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要删除角色 <span id="roleNameToDelete" class="fw-bold"></span> 吗？</p>
+                <p class="text-danger">此操作无法撤销，所有被分配此角色的用户将失去相应权限。</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-action="DeleteRole" method="post">
+                    <input type="hidden" id="roleIdToDelete" name="id" />
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-danger">确认删除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 设置删除模态框的角色ID和名称
+            $('#deleteRoleModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var roleId = button.data('role-id');
+                var roleName = button.data('role-name');
+                
+                $('#roleIdToDelete').val(roleId);
+                $('#roleNameToDelete').text(roleName);
+            });
+        });
+    </script>
+} 

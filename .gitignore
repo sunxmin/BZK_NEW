@@ -1,0 +1,75 @@
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.cache
+*.log
+
+# Build results
+bin/
+obj/
+publish/
+out/
+
+# Package files
+*.nupkg
+*.snupkg
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Log files
+logs/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database files
+*.db
+*.sqlite
+*.bak
+
+# Redis dump files
+dump.rdb
+
+# Node modules (if any)
+node_modules/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Sensitive configuration files
+appsettings.*.json
+!appsettings.json
+!appsettings.Production.json
+
+# Backup files
+*.backup
+
+# Published folder (we'll commit the specific needed files)
+BZKQuerySystem.Web/publish/
+
+# Exception: Keep deployment scripts and configs
+!deploy-*.bat
+!deploy-*.ps1
+!web.config.fixed
+!fix-webconfig.ps1
+!restore-webconfig.ps1
+!IIS部署指南.md
