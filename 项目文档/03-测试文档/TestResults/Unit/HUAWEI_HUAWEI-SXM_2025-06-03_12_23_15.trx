@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="98ee054e-2c50-4e08-b5e4-ebafdc6e7f0a" name="HUAWEI@HUAWEI-SXM 2025-06-03 12:23:15" runUser="HUAWEI-SXM\HUAWEI" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-06-03T12:23:15.9225210+08:00" queuing="2025-06-03T12:23:15.9225212+08:00" start="2025-06-03T12:23:12.5050098+08:00" finish="2025-06-03T12:23:15.9336485+08:00" />
+  <TestSettings name="default" id="a082ff04-99b8-47f5-ae2c-69d1212605af">
+    <Deployment runDeploymentRoot="HUAWEI_HUAWEI-SXM_2025-06-03_12_23_15" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="1928c239-50cf-4bf8-8cda-ba1559c048a6" testId="566ddd11-15bb-40a5-9c77-e2362ef6927f" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAsync_ShouldCacheValue_WithDefaultExpiration" computerName="HUAWEI-SXM" duration="00:00:00.0005334" startTime="2025-06-03T12:23:15.7710601+08:00" endTime="2025-06-03T12:23:15.7710601+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1928c239-50cf-4bf8-8cda-ba1559c048a6" />
+    <UnitTestResult executionId="61200626-b89e-487a-b86d-056a1f311cda" testId="d89130bf-d4dd-3052-a259-33957436c530" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAndGet_ShouldWorkWithDifferentTypes&lt;Int32&gt;(value: 123)" computerName="HUAWEI-SXM" duration="00:00:00.0029778" startTime="2025-06-03T12:23:15.7619987+08:00" endTime="2025-06-03T12:23:15.7619989+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="61200626-b89e-487a-b86d-056a1f311cda" />
+    <UnitTestResult executionId="e70f4287-f32b-4f27-b0cb-60df4beeb5ee" testId="b69645ab-c6c1-777e-81a3-968c73fe3981" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.RemoveAsync_ShouldRemoveCachedValue" computerName="HUAWEI-SXM" duration="00:00:00.0654185" startTime="2025-06-03T12:23:15.7563252+08:00" endTime="2025-06-03T12:23:15.7563450+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e70f4287-f32b-4f27-b0cb-60df4beeb5ee" />
+    <UnitTestResult executionId="9db80578-8a17-47ad-9d5d-14d267c8023b" testId="c6de4d3c-7e51-450c-d9d7-873d7733afcd" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.GenerateCacheKey_ShouldGenerateConsistentKeys" computerName="HUAWEI-SXM" duration="00:00:00.0010872" startTime="2025-06-03T12:23:15.7698308+08:00" endTime="2025-06-03T12:23:15.7698310+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9db80578-8a17-47ad-9d5d-14d267c8023b" />
+    <UnitTestResult executionId="a18b26ec-41f4-4f40-9265-09be2c901e8f" testId="630a5e66-f8f1-e846-1954-f22ede1cd065" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAndGet_ShouldWorkWithDifferentTypes&lt;Boolean&gt;(value: True)" computerName="HUAWEI-SXM" duration="00:00:00.0034324" startTime="2025-06-03T12:23:15.7680631+08:00" endTime="2025-06-03T12:23:15.7680633+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a18b26ec-41f4-4f40-9265-09be2c901e8f" />
+    <UnitTestResult executionId="516aa0ef-07bc-4cd6-88d3-1fd6ccdb1e99" testId="bd5fae70-dae6-4e1b-cf6c-2821247a2707" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.GetAsync_ShouldReturnNull_WhenKeyNotExists" computerName="HUAWEI-SXM" duration="00:00:00.0005326" startTime="2025-06-03T12:23:15.7686781+08:00" endTime="2025-06-03T12:23:15.7686781+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="516aa0ef-07bc-4cd6-88d3-1fd6ccdb1e99" />
+    <UnitTestResult executionId="e590f07c-5b5f-4d07-83f2-0a40e3f9d336" testId="0cd09833-f100-550e-44a8-367e7a08a850" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAsync_ShouldCacheValue_WithCustomExpiration" computerName="HUAWEI-SXM" duration="00:00:00.0005764" startTime="2025-06-03T12:23:15.7704707+08:00" endTime="2025-06-03T12:23:15.7704708+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e590f07c-5b5f-4d07-83f2-0a40e3f9d336" />
+    <UnitTestResult executionId="afe14abc-fba3-4e13-8052-0103edad0c6f" testId="37a63e7f-aa5b-dd61-564f-fcf3a2e93f2e" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAndGet_ShouldWorkWithDifferentTypes&lt;String&gt;(value: &quot;string_value&quot;)" computerName="HUAWEI-SXM" duration="00:00:00.0024843" startTime="2025-06-03T12:23:15.7645473+08:00" endTime="2025-06-03T12:23:15.7645474+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="afe14abc-fba3-4e13-8052-0103edad0c6f" />
+    <UnitTestResult executionId="eb9cd3d2-479d-42fa-8242-7f46e9c27342" testId="fca72f37-7fdd-cabe-225a-7afc0dc168c8" testName="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAsync_ShouldHandleComplexObjects" computerName="HUAWEI-SXM" duration="00:00:00.0029472" startTime="2025-06-03T12:23:15.7594197+08:00" endTime="2025-06-03T12:23:15.7594199+08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eb9cd3d2-479d-42fa-8242-7f46e9c27342" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAsync_ShouldHandleComplexObjects" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="fca72f37-7fdd-cabe-225a-7afc0dc168c8">
+      <Execution id="eb9cd3d2-479d-42fa-8242-7f46e9c27342" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="SetAsync_ShouldHandleComplexObjects" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAsync_ShouldCacheValue_WithDefaultExpiration" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="566ddd11-15bb-40a5-9c77-e2362ef6927f">
+      <Execution id="1928c239-50cf-4bf8-8cda-ba1559c048a6" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="SetAsync_ShouldCacheValue_WithDefaultExpiration" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.GetAsync_ShouldReturnNull_WhenKeyNotExists" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="bd5fae70-dae6-4e1b-cf6c-2821247a2707">
+      <Execution id="516aa0ef-07bc-4cd6-88d3-1fd6ccdb1e99" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="GetAsync_ShouldReturnNull_WhenKeyNotExists" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAndGet_ShouldWorkWithDifferentTypes&lt;Int32&gt;(value: 123)" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="d89130bf-d4dd-3052-a259-33957436c530">
+      <Execution id="61200626-b89e-487a-b86d-056a1f311cda" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="SetAndGet_ShouldWorkWithDifferentTypes" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAndGet_ShouldWorkWithDifferentTypes&lt;String&gt;(value: &quot;string_value&quot;)" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="37a63e7f-aa5b-dd61-564f-fcf3a2e93f2e">
+      <Execution id="afe14abc-fba3-4e13-8052-0103edad0c6f" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="SetAndGet_ShouldWorkWithDifferentTypes" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAndGet_ShouldWorkWithDifferentTypes&lt;Boolean&gt;(value: True)" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="630a5e66-f8f1-e846-1954-f22ede1cd065">
+      <Execution id="a18b26ec-41f4-4f40-9265-09be2c901e8f" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="SetAndGet_ShouldWorkWithDifferentTypes" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.RemoveAsync_ShouldRemoveCachedValue" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="b69645ab-c6c1-777e-81a3-968c73fe3981">
+      <Execution id="e70f4287-f32b-4f27-b0cb-60df4beeb5ee" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="RemoveAsync_ShouldRemoveCachedValue" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.GenerateCacheKey_ShouldGenerateConsistentKeys" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="c6de4d3c-7e51-450c-d9d7-873d7733afcd">
+      <Execution id="9db80578-8a17-47ad-9d5d-14d267c8023b" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="GenerateCacheKey_ShouldGenerateConsistentKeys" />
+    </UnitTest>
+    <UnitTest name="BZKQuerySystem.Tests.Services.CacheServiceTests.SetAsync_ShouldCacheValue_WithCustomExpiration" storage="d:\米帝信息科技\病种库相关\bzk_new\bzkquerysystem.tests\bin\debug\net8.0\bzkquerysystem.tests.dll" id="0cd09833-f100-550e-44a8-367e7a08a850">
+      <Execution id="e590f07c-5b5f-4d07-83f2-0a40e3f9d336" />
+      <TestMethod codeBase="D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Tests\bin\Debug\net8.0\BZKQuerySystem.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="BZKQuerySystem.Tests.Services.CacheServiceTests" name="SetAsync_ShouldCacheValue_WithCustomExpiration" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="566ddd11-15bb-40a5-9c77-e2362ef6927f" executionId="1928c239-50cf-4bf8-8cda-ba1559c048a6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d89130bf-d4dd-3052-a259-33957436c530" executionId="61200626-b89e-487a-b86d-056a1f311cda" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b69645ab-c6c1-777e-81a3-968c73fe3981" executionId="e70f4287-f32b-4f27-b0cb-60df4beeb5ee" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c6de4d3c-7e51-450c-d9d7-873d7733afcd" executionId="9db80578-8a17-47ad-9d5d-14d267c8023b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="630a5e66-f8f1-e846-1954-f22ede1cd065" executionId="a18b26ec-41f4-4f40-9265-09be2c901e8f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bd5fae70-dae6-4e1b-cf6c-2821247a2707" executionId="516aa0ef-07bc-4cd6-88d3-1fd6ccdb1e99" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0cd09833-f100-550e-44a8-367e7a08a850" executionId="e590f07c-5b5f-4d07-83f2-0a40e3f9d336" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="37a63e7f-aa5b-dd61-564f-fcf3a2e93f2e" executionId="afe14abc-fba3-4e13-8052-0103edad0c6f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fca72f37-7fdd-cabe-225a-7afc0dc168c8" executionId="eb9cd3d2-479d-42fa-8242-7f46e9c27342" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="列表中未列出的结果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="所有已加载的结果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="9" executed="9" passed="9" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.5+1caef2f33e (64-bit .NET 8.0.5)&#xD;
+[xUnit.net 00:00:02.27]   Discovering: BZKQuerySystem.Tests&#xD;
+[xUnit.net 00:00:02.32]   Discovered:  BZKQuerySystem.Tests&#xD;
+[xUnit.net 00:00:02.32]   Starting:    BZKQuerySystem.Tests&#xD;
+[xUnit.net 00:00:02.45]   Finished:    BZKQuerySystem.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

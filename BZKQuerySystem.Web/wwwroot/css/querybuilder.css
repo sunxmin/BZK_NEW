@@ -1,0 +1,350 @@
+/* 专病多维度查询系统 - QueryBuilder 页面样式 */
+/* 性能优化：外部化CSS，减少HTML内联样式 */
+
+/* 顶部导航固定区域样式 */
+.top-navbar-fixed {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: white;
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 为固定导航腾出空间 */
+.content-below-navbar {
+    padding-top: 10px;
+}
+
+/* 增强查询构建器区域 */
+.query-form-section {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #eaeaea;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+.query-form-section:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.query-form-section h5 {
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+    color: #495057;
+}
+
+/* 选中的表项样式 */
+.selected-table-item {
+    background-color: #e9f7fe;
+    border-left: 3px solid #0d6efd;
+    margin-bottom: 5px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.selected-table-item:hover {
+    background-color: #d4f3fd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 现代化加载动画 */
+.modern-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+.large-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 进度指示器 */
+.progress-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #28a745, #ffc107, #dc3545, #007bff);
+    background-size: 200% 100%;
+    animation: progressAnimation 2s ease-in-out infinite;
+}
+
+@keyframes progressAnimation {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* 现代化按钮状态 */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.btn-success-temp {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+/* Toast通知样式 */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1060;
+    max-width: 400px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.toast-modern {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    backdrop-filter: blur(10px);
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-modern.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.toast-modern.fade {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+}
+
+/* Toast进入动画 */
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Toast退出动画 */
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.9);
+    }
+}
+
+.toast-enter {
+    animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-exit {
+    animation: toastSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-success {
+    background-color: rgba(40, 167, 69, 0.95);
+    color: white;
+}
+
+.toast-error {
+    background-color: rgba(220, 53, 69, 0.95);
+    color: white;
+}
+
+.toast-info {
+    background-color: rgba(13, 110, 253, 0.95);
+    color: white;
+}
+
+.toast-warning {
+    background-color: rgba(255, 193, 7, 0.95);
+    color: #212529;
+}
+
+/* 骨架屏加载效果 */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+    height: 16px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.skeleton-button {
+    height: 38px;
+    border-radius: 6px;
+    width: 120px;
+}
+
+/* 按钮悬停效果增强 */
+.btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* 查询结果表格优化 */
+.table-responsive {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table tbody tr:hover {
+    background-color: #f5f5f5;
+    transform: scale(1.001);
+    transition: all 0.2s ease;
+}
+
+/* 实时通信状态指示器 */
+.connection-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    z-index: 1050;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.connection-status.connected {
+    background-color: rgba(40, 167, 69, 0.9);
+    color: white;
+}
+
+.connection-status.connecting {
+    background-color: rgba(255, 193, 7, 0.9);
+    color: #212529;
+}
+
+.connection-status.disconnected {
+    background-color: rgba(220, 53, 69, 0.9);
+    color: white;
+}
+
+/* 硬件加速优化 */
+.query-form-section,
+.btn,
+.selected-table-item,
+.toast-modern {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .query-form-section {
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .top-navbar-fixed {
+        padding: 10px;
+    }
+    
+    .connection-status {
+        bottom: 10px;
+        right: 10px;
+        font-size: 11px;
+    }
+}
+
+/* 性能优化：减少重绘 */
+* {
+    box-sizing: border-box;
+}
+
+/* 滚动条优化 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+} 

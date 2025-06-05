@@ -1,0 +1,14 @@
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\bin\Release\net8.0\BZKQuerySystem.DataAccess.deps.json
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\bin\Release\net8.0\BZKQuerySystem.DataAccess.runtimeconfig.json
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\bin\Release\net8.0\BZKQuerySystem.DataAccess.dll
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\bin\Release\net8.0\BZKQuerySystem.DataAccess.pdb
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.csproj.AssemblyReference.cache
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.GeneratedMSBuildEditorConfig.editorconfig
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.AssemblyInfoInputs.cache
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.AssemblyInfo.cs
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.csproj.CoreCompileInputs.cache
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.dll
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\refint\BZKQuerySystem.DataAccess.dll
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.pdb
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\BZKQuerySystem.DataAccess.genruntimeconfig.cache
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.DataAccess\obj\Release\net8.0\ref\BZKQuerySystem.DataAccess.dll

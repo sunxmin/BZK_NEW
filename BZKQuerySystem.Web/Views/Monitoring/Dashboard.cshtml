@@ -1,0 +1,1000 @@
+@{
+    ViewData["Title"] = "系统监控仪表板";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- 第一阶段优化：性能监控仪表板 -->
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-tachometer-alt me-2"></i>系统监控仪表板
+                </h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt me-1"></i>刷新
+                    </button>
+                    <span class="badge bg-success" id="lastUpdated">实时数据</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 健康状态总览 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-heartbeat me-2"></i>系统健康状态
+                    </h5>
+                    <div class="row" id="healthOverview">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="health-status-indicator" id="overallStatus">
+                                    <i class="fas fa-circle-notch fa-spin text-primary"></i>
+                                </div>
+                                <h6 class="mt-2">整体状态</h6>
+                                <span class="badge bg-secondary" id="overallStatusText">检测中...</span>
+                            </div>
+                        </div>
+                        <div class="col-md-9" id="healthDetails">
+                            <!-- 健康检查详情将动态加载 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 性能指标卡片 -->
+    <div class="row mb-4">
+        <!-- 数据库响应时间 -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon text-primary mb-2">
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                    <h6 class="card-title">数据库响应时间</h6>
+                    <h3 class="text-primary mb-1" id="dbResponseTime">--</h3>
+                    <small class="text-muted">毫秒</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内存使用 -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon text-success mb-2">
+                        <i class="fas fa-memory fa-2x"></i>
+                    </div>
+                    <h6 class="card-title">内存使用</h6>
+                    <h3 class="text-success mb-1" id="memoryUsage">--</h3>
+                    <small class="text-muted">MB</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户数量 -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon text-info mb-2">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <h6 class="card-title">用户数量</h6>
+                    <h3 class="text-info mb-1" id="userCount">--</h3>
+                    <small class="text-muted">个</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 并发查询数 -->
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="metric-icon text-warning mb-2">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <h6 class="card-title">最大并发查询</h6>
+                    <h3 class="text-warning mb-1" id="maxQueries">--</h3>
+                    <small class="text-muted">个</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 缓存状态 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm monitoring-card">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-layer-group me-2"></i>缓存配置状态
+                    </h5>
+                    <div class="row" id="cacheStatus">
+                        <!-- 缓存状态将动态加载 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm monitoring-card">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-chart-line me-2"></i>性能趋势
+                    </h5>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 健康检查详细列表 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-list-check me-2"></i>健康检查详情
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>检查项目</th>
+                                    <th>状态</th>
+                                    <th>响应时间</th>
+                                    <th>描述</th>
+                                </tr>
+                            </thead>
+                            <tbody id="healthCheckTable">
+                                <!-- 健康检查详情将动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 临时调试信息面板 -->
+    <div class="row mt-4" id="debugPanel" style="display: none;">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bug"></i> 调试信息
+                        <button class="btn btn-sm btn-outline-dark float-end" onclick="toggleDebugPanel()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>库加载状态</h6>
+                            <ul id="libraryStatus" class="list-unstyled small">
+                                <!-- 动态填充 -->
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>API响应状态</h6>
+                            <div id="apiStatus" class="small">
+                                <!-- 动态填充 -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <h6>控制台错误</h6>
+                            <div id="consoleErrors" class="small text-danger">
+                                <!-- 动态填充 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加调试按钮 -->
+<button id="debugToggle" class="btn btn-outline-secondary btn-sm position-fixed" 
+        style="bottom: 20px; right: 20px; z-index: 1000;" onclick="toggleDebugPanel()">
+    <i class="fas fa-bug"></i> 调试
+</button>
+
+<style>
+.health-status-indicator {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.metric-icon {
+    opacity: 0.8;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.status-healthy {
+    color: #28a745 !important;
+}
+
+.status-degraded {
+    color: #ffc107 !important;
+}
+
+.status-unhealthy {
+    color: #dc3545 !important;
+}
+
+.cache-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.cache-enabled {
+    background-color: #28a745;
+}
+
+.cache-disabled {
+    background-color: #6c757d;
+}
+
+.cache-warning {
+    background-color: #ffc107;
+}
+
+/* 图表容器样式 */
+#performanceChart {
+    max-height: 300px !important;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* 确保卡片高度一致 */
+.monitoring-card {
+    height: 400px;
+}
+
+.monitoring-card .card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.monitoring-card .chart-container {
+    flex: 1;
+    min-height: 0;
+}
+
+/* 调试面板样式 */
+#debugPanel .card {
+    transform: none;
+}
+
+#debugToggle {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+
+<script>
+// 第一阶段优化：性能监控仪表板JavaScript
+let performanceChart = null;
+let refreshInterval = null;
+let isChartInitialized = false;
+
+// 页面加载时执行 - 使用原生JavaScript事件
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('监控仪表板页面开始初始化');
+    
+    // 延迟初始化，确保所有库都已加载
+    setTimeout(() => {
+        initializeDashboard();
+    }, 1000);
+});
+
+// 初始化仪表板
+function initializeDashboard() {
+    console.log('开始初始化仪表板');
+    
+    // 检查jQuery是否可用（可选，不是必需的）
+    if (typeof $ !== 'undefined') {
+        console.log('jQuery 可用');
+    } else {
+        console.log('jQuery 不可用，使用原生JavaScript');
+    }
+    
+    // 检查Chart.js是否可用
+    if (typeof Chart !== 'undefined') {
+        console.log('Chart.js 可用，初始化图表');
+        try {
+    initializeChart();
+        } catch (error) {
+            console.error('图表初始化失败:', error);
+            showChartError(error.message);
+        }
+    } else {
+        console.warn('Chart.js 不可用，显示错误信息');
+        showChartError('Chart.js 库未正确加载');
+    }
+    
+    // 加载仪表板数据
+    loadDashboardData();
+    
+    // 启动自动刷新
+    startAutoRefresh();
+}
+
+// 显示错误信息
+function showErrorMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    if (container && container.firstChild) {
+        container.insertBefore(alertDiv, container.firstChild);
+    }
+}
+
+// 显示图表错误
+function showChartError(errorMessage) {
+    const chartContainer = document.querySelector('.chart-container');
+    if (chartContainer) {
+        let errorDetails = '';
+        if (errorMessage) {
+            errorDetails = `<small class="text-muted">错误详情: ${errorMessage}</small>`;
+        }
+        
+        chartContainer.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-chart-line fa-3x mb-2"></i>
+                <p>图表创建时出现错误</p>
+                <small>请检查 Chart.js 是否正确加载</small>
+                ${errorDetails}
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="initializeChart()">
+                        <i class="fas fa-redo"></i> 重试
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// 初始化图表（增强错误处理）
+function initializeChart() {
+    if (isChartInitialized) {
+        console.log('图表已初始化，跳过重复初始化');
+        return;
+    }
+    
+    const canvas = document.getElementById('performanceChart');
+    if (!canvas) {
+        console.warn('未找到图表canvas元素');
+        return;
+    }
+    
+    // 检查Chart是否可用
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js 未正确加载');
+        showChartError('Chart.js库未加载');
+        return;
+    }
+    
+    try {
+        const ctx = canvas.getContext('2d');
+        
+        // 销毁现有图表实例
+        if (performanceChart) {
+            performanceChart.destroy();
+            performanceChart = null;
+        }
+        
+        // 创建图表配置
+        const chartConfig = {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                    label: '数据库响应时间 (ms)',
+                data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.4,
+                    yAxisID: 'y'
+            }, {
+                    label: '内存使用 (MB)',
+                data: [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                    mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                            text: '时间'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                            text: '响应时间 (ms)'
+                        }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                            text: '内存使用 (MB)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                    title: {
+                        display: true,
+                        text: '系统性能实时监控'
+                    },
+                legend: {
+                    display: true,
+                    position: 'top'
+                    }
+                }
+            }
+        };
+        
+        // 创建图表实例（兼容不同版本的Chart.js）
+        try {
+            // 尝试标准构造函数
+            performanceChart = new Chart(ctx, chartConfig);
+        } catch (e) {
+            // 尝试备用构造函数（较旧版本）
+            if (Chart.Chart) {
+                performanceChart = new Chart.Chart(ctx, chartConfig);
+            } else {
+                throw new Error('无法创建Chart实例：' + e.message);
+            }
+        }
+        
+        isChartInitialized = true;
+        console.log('性能监控图表初始化成功');
+        
+    } catch (error) {
+        console.error('图表创建失败:', error);
+        showChartError(error.message);
+        isChartInitialized = false;
+    }
+}
+
+// 加载仪表板数据（增强错误处理）
+async function loadDashboardData() {
+    try {
+        showLoadingState();
+        
+        // 创建带超时的控制器
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时，减少等待时间
+        
+        const response = await fetch('/api/Monitoring/Dashboard', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
+
+        // 清除超时计时器
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('仪表板数据加载成功:', data);
+
+        // 验证数据结构
+        if (!data || typeof data !== 'object') {
+            throw new Error('API返回的数据格式无效');
+        }
+
+        // 更新各个组件的数据（使用安全的方式）
+        try {
+            // API返回的是MonitoringDashboardViewModel对象
+            updateHealthStatus({
+                status: data.healthStatus,
+                message: data.healthStatus === 'Unknown' ? '系统状态检查中...' : 
+                        data.healthStatus === 'Error' ? '获取数据时出现错误' : '系统运行正常'
+            });
+        } catch (error) {
+            console.warn('更新健康状态失败:', error);
+        }
+        
+        try {
+            updatePerformanceMetrics(data.performanceMetrics || {});
+        } catch (error) {
+            console.warn('更新性能指标失败:', error);
+        }
+        
+        try {
+            updateCacheStatus(data.cacheStatus || {});
+        } catch (error) {
+            console.warn('更新缓存状态失败:', error);
+        }
+        
+        try {
+            updateHealthCheckTable(data.healthChecks || []);
+        } catch (error) {
+            console.warn('更新健康检查表格失败:', error);
+        }
+        
+        try {
+            updateChart(data.performanceMetrics || {});
+        } catch (error) {
+            console.warn('更新图表失败:', error);
+        }
+        
+        updateLastRefreshTime();
+        hideLoadingState();
+        
+    } catch (error) {
+        console.error('加载监控数据失败:', error);
+        
+        hideLoadingState();
+        showErrorState();
+        
+        // 显示详细的错误信息
+        let errorMessage = '加载数据失败';
+        if (error.name === 'AbortError') {
+            errorMessage = '请求超时，请检查网络连接';
+        } else if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorMessage = '网络连接出现问题，请检查网络';
+        } else if (error.message.includes('HTTP')) {
+            errorMessage = `服务器响应错误: ${error.message}`;
+        } else if (error.message.includes('JSON')) {
+            errorMessage = '服务器返回的数据格式错误';
+        }
+        
+        showErrorMessage(errorMessage);
+        
+        // 可选：降级数据显示
+        showFallbackData();
+    }
+}
+
+// 显示降级数据
+function showFallbackData() {
+    try {
+        // 显示基本的占位数据
+        updatePerformanceMetrics({
+            databaseResponseTime: '--',
+            memoryUsageMB: '--',
+            userCount: '--',
+            maxConcurrentQueries: '--'
+        });
+        
+        updateHealthStatus({
+            status: 'Unknown',
+            message: '数据加载失败'
+        });
+        
+        console.log('已显示降级数据');
+    } catch (error) {
+        console.error('显示降级数据失败:', error);
+    }
+}
+
+// 更新健康状态
+function updateHealthStatus(healthData) {
+    const statusElement = document.getElementById('overallStatus');
+    const statusTextElement = document.getElementById('overallStatusText');
+    
+    // 增加调试信息
+    console.log('更新健康状态，接收到的数据:', healthData);
+    
+    // 确保healthData存在，否则使用默认值
+    if (!healthData) {
+        healthData = {
+            status: 'Unknown',
+            message: '数据不可用'
+        };
+    }
+    
+    // 处理可能的状态值变化
+    let status = healthData.status || healthData.overallStatus || 'Unknown';
+    
+    // 标准化状态值
+    if (typeof status === 'string') {
+        status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+        // 处理可能的中文状态
+        if (status === '健康' || status === 'Healthy' || status === 'Ok') {
+            status = 'Healthy';
+        } else if (status === '警告' || status === 'Warning' || status === 'Degraded') {
+            status = 'Degraded';
+        } else if (status === '错误' || status === 'Error' || status === 'Unhealthy') {
+            status = 'Unhealthy';
+        }
+    }
+    
+    console.log('处理后的状态值:', status);
+    
+    const statusClass = getStatusClass(status);
+    const statusIcon = getStatusIcon(status);
+    const badgeClass = getStatusBadgeClass(status);
+    
+    if (statusElement) {
+    statusElement.innerHTML = `<i class="fas ${statusIcon} ${statusClass}"></i>`;
+    }
+    
+    if (statusTextElement) {
+        // 显示中文状态文本
+        let statusText = status;
+        switch (status) {
+            case 'Healthy':
+                statusText = '健康';
+                break;
+            case 'Degraded':
+                statusText = '警告';
+                break;
+            case 'Unhealthy':
+                statusText = '异常';
+                break;
+            default:
+                statusText = '未知';
+        }
+        
+        statusTextElement.textContent = statusText;
+        statusTextElement.className = `badge bg-${badgeClass}`;
+    }
+    
+    // 更新健康详情
+    const healthDetails = document.getElementById('healthDetails');
+    if (healthDetails && healthData.message) {
+        healthDetails.innerHTML = `
+            <div class="col-12">
+                <p class="mb-1"><strong>状态详情:</strong></p>
+                <p class="text-muted small">${healthData.message}</p>
+            </div>
+        `;
+    }
+}
+
+// 更新性能指标
+function updatePerformanceMetrics(data) {
+    if (!data) return;
+    
+    // 确保字段名与API返回的数据匹配
+    document.getElementById('dbResponseTime').textContent = 
+        data.databaseResponseTime !== undefined ? data.databaseResponseTime : '--';
+    document.getElementById('memoryUsage').textContent = 
+        data.memoryUsageMB !== undefined ? data.memoryUsageMB : '--';
+    document.getElementById('userCount').textContent = 
+        data.userCount !== undefined ? data.userCount : '--';
+    document.getElementById('maxQueries').textContent = 
+        data.maxConcurrentQueries !== undefined ? data.maxConcurrentQueries : '--';
+}
+
+// 更新缓存状态
+function updateCacheStatus(cacheData) {
+    const container = document.getElementById('cacheStatus');
+    
+    // 确保cacheData存在，否则使用默认值
+    if (!cacheData) {
+        cacheData = {
+            redisEnabled: false,
+            redisActuallyWorking: false,
+            memoryCacheEnabled: true,
+            defaultExpirationMinutes: 30,
+            queryResultExpirationMinutes: 15,
+            tableSchemaExpirationMinutes: 60
+        };
+    }
+    
+    // Redis状态显示逻辑优化
+    let redisStatusText = '';
+    let redisStatusClass = '';
+    let redisStatusIcon = '';
+    
+    if (cacheData.redisEnabled) {
+        if (cacheData.redisActuallyWorking) {
+            redisStatusText = '已启用并正常工作';
+            redisStatusClass = 'cache-enabled';
+            redisStatusIcon = '<i class="fas fa-check-circle text-success"></i>';
+        } else {
+            redisStatusText = '已启用但需要安装Redis服务';
+            redisStatusClass = 'cache-warning';
+            redisStatusIcon = '<i class="fas fa-exclamation-triangle text-warning"></i>';
+        }
+    } else {
+        redisStatusText = '已禁用';
+        redisStatusClass = 'cache-disabled';
+        redisStatusIcon = '<i class="fas fa-times-circle text-muted"></i>';
+    }
+    
+    const memoryStatusIcon = cacheData.memoryCacheEnabled 
+        ? '<i class="fas fa-check-circle text-success"></i>'
+        : '<i class="fas fa-times-circle text-muted"></i>';
+    
+    container.innerHTML = `
+        <div class="col-12 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="cache-indicator ${redisStatusClass}"></span>
+                    Redis缓存: ${redisStatusText}
+                </div>
+                <small>${redisStatusIcon} ${cacheData.redisEnabled && cacheData.redisActuallyWorking ? '分布式缓存正常' : (cacheData.redisEnabled ? '需要安装Redis服务' : '使用内存缓存')}</small>
+            </div>
+        </div>
+        <div class="col-12 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="cache-indicator ${cacheData.memoryCacheEnabled ? 'cache-enabled' : 'cache-disabled'}"></span>
+                    内存缓存: ${cacheData.memoryCacheEnabled ? '已启用' : '已禁用'}
+                </div>
+                <small>${memoryStatusIcon} 本地缓存${cacheData.memoryCacheEnabled ? '正常' : '已禁用'}</small>
+            </div>
+        </div>
+        <div class="col-12 mb-2">
+            <small class="text-muted">
+                <strong>缓存配置：</strong><br>
+                默认过期: ${cacheData.defaultExpirationMinutes || 30}分钟 | 
+                查询结果: ${cacheData.queryResultExpirationMinutes || 15}分钟 | 
+                表结构: ${cacheData.tableSchemaExpirationMinutes || 60}分钟
+            </small>
+        </div>
+        ${cacheData.redisEnabled && !cacheData.redisActuallyWorking 
+            ? `<div class="col-12 mt-2">
+                <div class="alert alert-info py-2 mb-0">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        <strong>Redis配置已启用</strong>，但服务未安装。<br>
+                        查看 <code>Redis安装配置指南.md</code> 了解安装步骤。<br>
+                        当前系统使用内存缓存，性能良好。
+                    </small>
+                </div>
+               </div>` 
+            : ''}
+    `;
+}
+
+// 获取状态样式类
+function getStatusClass(status) {
+    switch (status) {
+        case 'Healthy': return 'status-healthy';
+        case 'Degraded': return 'status-degraded';
+        case 'Unhealthy': return 'status-unhealthy';
+        default: return 'text-secondary';
+    }
+}
+
+// 获取状态图标
+function getStatusIcon(status) {
+    switch (status) {
+        case 'Healthy': return 'fa-check-circle';
+        case 'Degraded': return 'fa-exclamation-triangle';
+        case 'Unhealthy': return 'fa-times-circle';
+        default: return 'fa-question-circle';
+    }
+}
+
+// 获取状态徽章类
+function getStatusBadgeClass(status) {
+    switch (status) {
+        case 'Healthy': return 'success';
+        case 'Degraded': return 'warning';
+        case 'Unhealthy': return 'danger';
+        default: return 'secondary';
+    }
+}
+
+// 更新图表数据
+function updateChart(data) {
+    if (!data || !performanceChart) {
+        console.warn('数据或图表实例不存在，跳过图表更新');
+        return;
+    }
+    
+    try {
+    const now = new Date().toLocaleTimeString();
+    
+        // 限制最多10个数据点
+    if (performanceChart.data.labels.length >= 10) {
+        performanceChart.data.labels.shift();
+        performanceChart.data.datasets[0].data.shift();
+        performanceChart.data.datasets[1].data.shift();
+    }
+    
+        // 确保数据为有效数字
+    const dbResponseTime = Number(data.databaseResponseTime) || 0;
+    const memoryUsage = Number(data.memoryUsageMB) || 0;
+    
+        // 添加新数据点
+    performanceChart.data.labels.push(now);
+    performanceChart.data.datasets[0].data.push(dbResponseTime);
+    performanceChart.data.datasets[1].data.push(memoryUsage);
+    
+        // 更新图表
+    performanceChart.update('none');
+        
+        console.log('图表数据更新成功');
+    } catch (error) {
+        console.error('更新图表数据失败:', error);
+    }
+}
+
+// 更新健康检查表格
+function updateHealthCheckTable(healthChecks) {
+    const tableBody = document.getElementById('healthCheckTable');
+    if (!tableBody) return;
+    
+    if (!healthChecks || healthChecks.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">暂无健康检查数据</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    healthChecks.forEach(check => {
+        const statusClass = getStatusClass(check.status);
+        const statusIcon = getStatusIcon(check.status);
+        
+        html += `
+            <tr>
+                <td><i class="fas fa-server me-1"></i>${check.name}</td>
+                <td><i class="fas ${statusIcon} ${statusClass} me-1"></i>${check.status}</td>
+                <td>${check.responseTime || '--'}</td>
+                <td>${check.description || '--'}</td>
+            </tr>
+        `;
+    });
+    
+    tableBody.innerHTML = html;
+}
+
+// 显示加载状态
+function showLoadingState() {
+    const statusText = document.getElementById('overallStatusText');
+    if (statusText) {
+        statusText.textContent = '加载中...';
+        statusText.className = 'badge bg-secondary';
+    }
+}
+
+// 隐藏加载状态
+function hideLoadingState() {
+    // 加载状态会在数据更新时被替换
+}
+
+// 显示错误状态
+function showErrorState() {
+    const statusElement = document.getElementById('overallStatus');
+    const statusTextElement = document.getElementById('overallStatusText');
+    
+    if (statusElement) {
+        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i>';
+    }
+    
+    if (statusTextElement) {
+        statusTextElement.textContent = '加载失败';
+        statusTextElement.className = 'badge bg-danger';
+    }
+}
+
+// 更新最后刷新时间
+function updateLastRefreshTime() {
+    const element = document.getElementById('lastUpdated');
+    if (element) {
+        element.textContent = new Date().toLocaleTimeString();
+    }
+}
+
+// 启动自动刷新
+function startAutoRefresh() {
+    // 先清除现有的定时器
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+    
+    // 设置30秒自动刷新
+    refreshInterval = setInterval(() => {
+        loadDashboardData();
+    }, 30000);
+    
+    console.log('自动刷新已启动 (30秒间隔)');
+}
+
+// 刷新仪表板（手动）
+function refreshDashboard() {
+    console.log('手动刷新仪表板');
+    loadDashboardData();
+}
+
+// 切换调试面板
+function toggleDebugPanel() {
+    const panel = document.getElementById('debugPanel');
+    if (panel) {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        
+        if (panel.style.display === 'block') {
+            updateDebugInfo();
+        }
+    }
+}
+
+// 更新调试信息
+function updateDebugInfo() {
+    // 库状态
+    const libraryStatus = document.getElementById('libraryStatus');
+    if (libraryStatus) {
+        libraryStatus.innerHTML = `
+            <li>jQuery: ${typeof $ !== 'undefined' ? '? 已加载' : '? 未加载'}</li>
+            <li>Chart.js: ${typeof Chart !== 'undefined' ? '? 已加载' : '? 未加载'}</li>
+            <li>SignalR: ${typeof signalR !== 'undefined' ? '? 已加载' : '? 未加载'}</li>
+            <li>Bootstrap: ${typeof bootstrap !== 'undefined' ? '? 已加载' : '? 未加载'}</li>
+        `;
+    }
+    
+    // API状态
+    const apiStatus = document.getElementById('apiStatus');
+    if (apiStatus) {
+        apiStatus.innerHTML = `
+            <div>最后请求: ${new Date().toLocaleString()}</div>
+            <div>图表状态: ${isChartInitialized ? '已初始化' : '未初始化'}</div>
+        `;
+    }
+}
+
+// 页面卸载时清理
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+    
+    if (performanceChart) {
+        performanceChart.destroy();
+    }
+});
+</script> 

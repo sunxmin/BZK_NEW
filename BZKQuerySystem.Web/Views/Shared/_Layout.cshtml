@@ -1,0 +1,226 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - 专病多维度查询系统</title>
+    
+    <!-- 资源预加载优化 - 关键性能提升 -->
+    <link rel="preload" href="~/lib/jquery/dist/jquery.min.js" as="script">
+    <link rel="preload" href="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" as="script">
+    <link rel="preload" href="~/lib/bootstrap/dist/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="~/lib/fontawesome/css/all.min.css" as="style">
+    <link rel="preload" href="~/css/querybuilder.css" as="style">
+    
+    <!-- CSS资源 - 本地化优化 -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- 注释掉CDN引用，改为使用本地文件 -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+    
+    <!-- Select2 CSS - 本地化 -->
+    <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
+    <link rel="stylesheet" href="~/lib/select2/css/select2-bootstrap-5-theme.min.css" />
+    
+    <!-- SweetAlert2 CSS - 本地化 -->
+    <link rel="stylesheet" href="~/lib/sweetalert2/css/sweetalert2.min.css" />
+    
+    <!-- QueryBuilder 专用样式 - 性能优化 -->
+    <link rel="stylesheet" href="~/css/querybuilder.css" asp-append-version="true" />
+    
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BZKQuerySystem.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="wrapper">
+        <!-- 侧边栏 -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3 class="system-title">专病多维度查询系统</h3>
+                <button type="button" id="sidebarCollapse" class="btn btn-primary d-md-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <ul class="list-unstyled components">
+                <li class="sidebar-user-info text-center">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle fa-3x"></i>
+                    </div>
+                    <div class="user-name">
+                        @(User.FindFirst("DisplayName")?.Value ?? User.Identity.Name)
+                    </div>
+                </li>
+                <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Home" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active" : "")">
+                    <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> 首页</a>
+                </li>
+                <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "QueryBuilder" ? "active" : "")">
+                    <a asp-controller="QueryBuilder" asp-action="Index"><i class="fas fa-search"></i> 数据查询</a>
+                </li>
+                @if (User.HasClaim("Permission", "SystemAdmin") || User.HasClaim("Permission", "ManageTables"))
+                {
+                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Table" ? "active" : "")">
+                        <a asp-controller="Table" asp-action="Index"><i class="fas fa-database"></i> 数据表管理</a>
+                    </li>
+                }
+                @if (User.HasClaim("Permission", "SystemAdmin"))
+                {
+                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Monitoring" ? "active" : "")">
+                        <a href="/Monitoring/Dashboard"><i class="fas fa-chart-line"></i> 系统监控</a>
+                    </li>
+                }
+                @if (User.HasClaim("Permission", "SystemAdmin") || User.HasClaim("Permission", "ManageUsers"))
+                {
+                    <li class="@(ViewContext.RouteData.Values["Controller"].ToString() == "User" ? "active" : "")">
+                        <a href="#userSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                            <i class="fas fa-users"></i> 用户管理
+                        </a>
+                        <ul class="collapse list-unstyled @(ViewContext.RouteData.Values["Controller"].ToString() == "User" ? "show" : "")" id="userSubmenu">
+                            <li>
+                                <a asp-controller="User" asp-action="Index"><i class="fas fa-user"></i> 用户列表</a>
+                            </li>
+                            <li>
+                                <a asp-controller="User" asp-action="Roles"><i class="fas fa-user-tag"></i> 角色管理</a>
+                            </li>
+                        </ul>
+                    </li>
+                }
+                <li>
+                    <a href="#accountSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                        <i class="fas fa-user-cog"></i> 账户设置
+                    </a>
+                    <ul class="collapse list-unstyled" id="accountSubmenu">
+                        <li>
+                            <a asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key"></i> 修改密码</a>
+                        </li>
+                        <li>
+                            <a href="javascript:document.getElementById('logoutForm').submit()"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- 测试链接已删除 -->
+            </ul>
+        </nav>
+
+        <!-- 页面内容 -->
+        <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapseToggle" class="btn btn-primary d-none d-md-block">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <div class="page-title">
+                        @ViewData["Title"]
+                    </div>
+
+                    <div class="ms-auto d-flex">
+                        <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post">
+                            @Html.AntiForgeryToken()
+                        </form>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i> @(User.FindFirst("DisplayName")?.Value ?? User.Identity.Name)
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key"></i> 修改密码</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="javascript:document.getElementById('logoutForm').submit()"><i class="fas fa-sign-out-alt"></i> 退出登录</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-3">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </div>
+
+            <footer class="border-top footer text-muted">
+                <div class="container text-center">
+                    &copy; @DateTime.Now.Year - 上海米帝信息技术有限公司 - 版权所有
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- JavaScript资源 - 性能优化顺序 -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Select2 JS - 本地化 -->
+    <script src="~/lib/select2/js/select2.min.js"></script>
+    
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            // 侧边栏折叠/展开
+            $('#sidebarCollapse, #sidebarCollapseToggle').on('click', function () {
+                $('#sidebar').toggleClass('active');
+                $('#content').toggleClass('active');
+            });
+
+            // 响应式处理，在小屏幕上自动折叠侧边栏
+            if ($(window).width() < 768) {
+                $('#sidebar').addClass('active');
+                $('#content').addClass('active');
+            }
+
+            // 窗口大小变化时处理
+            $(window).resize(function () {
+                if ($(window).width() < 768) {
+                    $('#sidebar').addClass('active');
+                    $('#content').addClass('active');
+                }
+            });
+        });
+    </script>
+    
+    <!-- SweetAlert2 JavaScript - 本地化 -->
+    <script src="~/lib/sweetalert2/js/sweetalert2.min.js"></script>
+    
+    <!-- 第二阶段C优化：SignalR实时通信 - 使用下载的UMD版本 -->
+    <script src="~/lib/signalr/js/signalr.min.js"></script>
+    <script src="~/js/signalr-client.js" asp-append-version="true"></script>
+    
+    <!-- 第二阶段C优化：数据可视化 - 直接使用本地UMD版本 -->
+    <script src="~/lib/chartjs/js/chart.umd.js"></script>
+    <script>
+        // Chart.js 加载验证
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Chart !== 'undefined') {
+                console.log('Chart.js 加载成功，版本:', Chart.version || 'Unknown');
+            } else {
+                console.error('Chart.js 加载失败');
+                // 创建错误提示
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-warning mt-2';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Chart.js 图表库加载失败，图表功能将受限。';
+                const container = document.querySelector('.container-fluid');
+                if (container && container.firstChild) {
+                    container.insertBefore(alertDiv, container.firstChild);
+                }
+            }
+        });
+    </script>
+    <script src="~/js/data-visualization.js" asp-append-version="true"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

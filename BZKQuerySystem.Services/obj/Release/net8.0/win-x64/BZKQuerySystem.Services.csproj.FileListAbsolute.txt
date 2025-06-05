@@ -1,0 +1,15 @@
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\bin\Release\net8.0\win-x64\BZKQuerySystem.Services.deps.json
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\bin\Release\net8.0\win-x64\BZKQuerySystem.Services.dll
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\bin\Release\net8.0\win-x64\BZKQuerySystem.Services.pdb
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\bin\Release\net8.0\win-x64\BZKQuerySystem.DataAccess.dll
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\bin\Release\net8.0\win-x64\BZKQuerySystem.DataAccess.pdb
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuerySystem.Services.csproj.AssemblyReference.cache
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuerySystem.Services.GeneratedMSBuildEditorConfig.editorconfig
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuerySystem.Services.AssemblyInfoInputs.cache
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuerySystem.Services.AssemblyInfo.cs
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuerySystem.Services.csproj.CoreCompileInputs.cache
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuery.28197AE8.Up2Date
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuerySystem.Services.dll
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\refint\BZKQuerySystem.Services.dll
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\BZKQuerySystem.Services.pdb
+D:\米帝信息科技\病种库相关\BZK_NEW\BZKQuerySystem.Services\obj\Release\net8.0\win-x64\ref\BZKQuerySystem.Services.dll

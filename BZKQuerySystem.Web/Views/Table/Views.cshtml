@@ -1,0 +1,219 @@
+@model IEnumerable<BZKQuerySystem.DataAccess.TableInfo>
+@{
+    ViewData["Title"] = "视图管理";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>视图管理</h2>
+            <p class="text-muted">管理数据库视图，查看和编辑视图定义。</p>
+        </div>
+    </div>
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    
+    <div class="row mb-3">
+        <div class="col">
+            <a asp-action="CreateView" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 创建视图
+            </a>
+            <a asp-action="RefreshDatabase" class="btn btn-outline-secondary ml-2">
+                <i class="fas fa-sync"></i> 刷新数据库架构
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">数据库视图列表</h5>
+                        <span class="badge bg-primary">@Model.Count() 个视图</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>视图名称</th>
+                                    <th>显示名称</th>
+                                    <th>描述</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Any())
+                                {
+                                    foreach (var view in Model)
+                                    {
+                                        <tr>
+                                            <td>@view.TableName</td>
+                                            <td>@view.DisplayName</td>
+                                            <td>@view.Description</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a asp-action="EditView" asp-route-viewName="@view.TableName" class="btn btn-outline-primary" title="编辑视图">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-info btn-view-definition" data-name="@view.TableName" title="查看SQL定义">
+                                                        <i class="fas fa-code"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger btn-delete-view" data-name="@view.TableName" title="删除视图">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-3">
+                                            <p class="mb-0 text-muted">暂无视图</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 查看SQL定义模态框 -->
+<div class="modal fade" id="viewDefinitionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">视图SQL定义</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre><code id="sqlDefinition" class="language-sql"></code></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="btnCopyDefinition">复制SQL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除视图 <strong id="viewToDelete"></strong> 吗？此操作不可恢复。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDelete">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 查看SQL定义
+            $('.btn-view-definition').on('click', function() {
+                var viewName = $(this).data('name');
+                
+                // 获取视图定义
+                $.ajax({
+                    url: '@Url.Action("GetViewDefinition")',
+                    method: 'GET',
+                    data: { viewName: viewName },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#sqlDefinition').text(response.definition);
+                            $('#viewDefinitionModal').modal('show');
+                        } else {
+                            alert('获取视图定义失败: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('请求失败，请稍后再试');
+                    }
+                });
+            });
+            
+            // 复制SQL定义
+            $('#btnCopyDefinition').on('click', function() {
+                var sqlText = $('#sqlDefinition').text();
+                
+                // 创建临时textarea元素
+                var textarea = document.createElement('textarea');
+                textarea.value = sqlText;
+                document.body.appendChild(textarea);
+                
+                // 选择并复制
+                textarea.select();
+                document.execCommand('copy');
+                
+                // 移除临时元素
+                document.body.removeChild(textarea);
+                
+                alert('SQL定义已复制到剪贴板');
+            });
+            
+            // 显示删除确认框
+            $('.btn-delete-view').on('click', function() {
+                var viewName = $(this).data('name');
+                $('#viewToDelete').text(viewName);
+                $('#btnConfirmDelete').data('name', viewName);
+                $('#deleteViewModal').modal('show');
+            });
+            
+            // 确认删除视图
+            $('#btnConfirmDelete').on('click', function() {
+                var viewName = $(this).data('name');
+                
+                $.ajax({
+                    url: '@Url.Action("DeleteView")',
+                    method: 'POST',
+                    data: { viewName: viewName },
+                    success: function(response) {
+                        $('#deleteViewModal').modal('hide');
+                        
+                        if (response.success) {
+                            alert('视图删除成功');
+                            // 刷新页面
+                            location.reload();
+                        } else {
+                            alert('删除视图失败: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        $('#deleteViewModal').modal('hide');
+                        alert('请求失败，请稍后再试');
+                    }
+                });
+            });
+        });
+    </script>
+} 

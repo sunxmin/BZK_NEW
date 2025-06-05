@@ -1,0 +1,39 @@
+@model BZKQuerySystem.Web.Controllers.LoginViewModel
+
+@{
+    ViewData["Title"] = "登录";
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
+}
+
+<div class="login-container">
+    <div class="login-box">
+        <h2 class="text-center mb-4">专病多维度查询系统</h2>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title text-center mb-4">用户登录</h5>
+                
+                <form asp-action="Login" method="post">
+                    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group mb-3">
+                        <label asp-for="UserName" class="control-label">用户名</label>
+                        <input asp-for="UserName" class="form-control" placeholder="请输入用户名" value="admin" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Password" class="control-label">密码</label>
+                        <input asp-for="Password" class="form-control" type="password" placeholder="请输入密码" value="123" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <button type="submit" class="btn btn-primary btn-block w-100">登录</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

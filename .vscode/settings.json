@@ -1,0 +1,124 @@
+{
+    // 项目特定的编码设置 - 强制UTF-8
+    "files.encoding": "utf8",
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "files.autoGuessEncoding": false,
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    // 强制使用UTF-8编码 - 覆盖自动检测
+    "files.defaultLanguage": "",
+    "files.associations": {
+        "*.cs": "csharp",
+        "*.md": "markdown",
+        "*.txt": "plaintext",
+        "*.sql": "sql"
+    },
+    // C# 项目设置
+    "[csharp]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "files.encoding": "utf8"
+    },
+    // Razor 页面设置
+    "[razor]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "files.encoding": "utf8"
+    },
+    // 文档文件设置
+    "[markdown]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "files.trimTrailingWhitespace": false,
+        "files.encoding": "utf8",
+        "editor.wordWrap": "on"
+    },
+    // 配置文件设置
+    "[json]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "files.encoding": "utf8"
+    },
+    "[xml]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "files.encoding": "utf8"
+    },
+    // SQL 文件设置
+    "[sql]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "files.encoding": "utf8"
+    },
+    // PowerShell 脚本设置
+    "[powershell]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "files.encoding": "utf8"
+    },
+    // 纯文本文件设置
+    "[plaintext]": {
+        "files.encoding": "utf8"
+    },
+    // Git 和版本控制设置
+    "git.alwaysSignOff": false,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    "git.inputValidation": true,
+    // 搜索和排除设置
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/.vs": true
+    },
+    // 文件监视排除
+    "files.watcherExclude": {
+        "**/bin/**": true,
+        "**/obj/**": true,
+        "**/node_modules/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true
+    },
+    // EditorConfig 支持 - 强制生效
+    "editorconfig.generateAuto": false,
+    "editor.detectIndentation": false,
+    // 终端设置
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "terminal.integrated.env.windows": {
+        "CHCP": "65001"
+    },
+    // 代码格式化设置
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
+    // 中文字符显示设置 - 确保中文正确显示
+    "editor.renderControlCharacters": true,
+    "editor.renderWhitespace": "boundary",
+    "editor.unicodeHighlight.allowedCharacters": {
+        "中": true,
+        "文": true,
+        "系": true,
+        "统": true,
+        "查": true,
+        "询": true
+    },
+    "editor.unicodeHighlight.nonBasicASCII": false,
+    // 编码相关的高亮设置
+    "workbench.colorCustomizations": {
+        "editorWarning.foreground": "#ff9900",
+        "editorError.foreground": "#ff0000"
+    },
+    // 推荐的扩展
+    "extensions.recommendations": [
+        "ms-dotnettools.csharp",
+        "editorconfig.editorconfig",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode"
+    ]
+}

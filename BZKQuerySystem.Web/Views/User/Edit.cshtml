@@ -1,0 +1,154 @@
+@model BZKQuerySystem.Web.Controllers.UserEditViewModel
+
+@{
+    ViewData["Title"] = "编辑用户";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-user-edit"></i> 编辑用户</h2>
+            <p class="lead">修改用户信息和角色分配</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回用户列表
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-user"></i> 用户信息</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="UserName" class="form-label">用户名</label>
+                            <input asp-for="UserName" class="form-control" readonly />
+                            <div class="form-text text-muted">用户名创建后不可修改</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="NewPassword" class="form-label">重置密码</label>
+                            <input asp-for="NewPassword" type="password" class="form-control" placeholder="输入新密码，留空表示不修改" />
+                            <span asp-validation-for="NewPassword" class="text-danger"></span>
+                            <div class="form-text text-muted">仅在需要重置密码时填写</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="DisplayName" class="form-label">显示名称</label>
+                            <input asp-for="DisplayName" class="form-control" placeholder="输入显示名称" />
+                            <span asp-validation-for="DisplayName" class="text-danger"></span>
+                            <div class="form-text text-muted">用户在系统中显示的名称</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Department" class="form-label">所属部门</label>
+                            <input asp-for="Department" class="form-control" placeholder="输入部门名称（选填）" />
+                            <span asp-validation-for="Department" class="text-danger"></span>
+                            <div class="form-text text-muted">用户所属的部门或团队（可选）</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Email" class="form-label">电子邮件</label>
+                            <input asp-for="Email" class="form-control" placeholder="输入电子邮件地址（选填）" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                            <div class="form-text text-muted">用于接收系统通知和找回密码（可选）</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="PhoneNumber" class="form-label">联系电话</label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="输入联系电话（选填）" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            <div class="form-text text-muted">用于紧急联系（可选）</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" asp-for="IsActive" id="isActiveSwitch">
+                        <label class="form-check-label" for="isActiveSwitch">
+                            用户状态 <span class="badge bg-@(Model.IsActive ? "success" : "danger")">@(Model.IsActive ? "启用" : "禁用")</span>
+                        </label>
+                    </div>
+                    <div class="form-text text-muted">禁用的用户无法登录系统</div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label">角色分配</label>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                @{
+                                    var roles = ViewBag.Roles as List<BZKQuerySystem.DataAccess.ApplicationRole>;
+                                    if (roles != null)
+                                    {
+                                        foreach (var role in roles)
+                                        {
+                                            bool isChecked = Model.RoleIds != null && Model.RoleIds.Contains(role.Id);
+                                            
+                                            <div class="col-md-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="RoleIds" value="@role.Id" 
+                                                           id="role_@role.Id"
+                                                           @(isChecked ? "checked" : "") />
+                                                    <label class="form-check-label" for="role_@role.Id">
+                                                        @role.Name <small class="text-muted">(@role.Description)</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存用户
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> 取消
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // 更新状态标签颜色
+            $('#isActiveSwitch').change(function() {
+                if ($(this).is(':checked')) {
+                    $(this).next('label').find('span').removeClass('bg-danger').addClass('bg-success').text('启用');
+                } else {
+                    $(this).next('label').find('span').removeClass('bg-success').addClass('bg-danger').text('禁用');
+                }
+            });
+        });
+    </script>
+} 

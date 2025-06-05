@@ -1,0 +1,94 @@
+@model BZKQuerySystem.Web.Controllers.CreateViewViewModel
+@{
+    ViewData["Title"] = "创建视图";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>创建新视图</h2>
+            <p class="text-muted">通过SQL语句创建自定义视图。</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">SQL定义</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateView" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="SqlDefinition" class="form-label">SQL定义</label>
+                            <textarea asp-for="SqlDefinition" class="form-control" rows="15" style="font-family: monospace;"></textarea>
+                            <span asp-validation-for="SqlDefinition" class="text-danger"></span>
+                            <div class="form-text">
+                                输入完整的CREATE VIEW语句。例如：<br>
+                                <code>CREATE VIEW vw_Example AS SELECT * FROM TableA WHERE Column1 > 10</code>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5>SQL语法提示</h5>
+                            <p>示例1: 创建简单视图</p>
+                            <pre><code>CREATE VIEW vw_EmployeeDepartment AS 
+SELECT e.EmployeeID, e.Name, d.DepartmentName
+FROM Employees e
+JOIN Departments d ON e.DepartmentID = d.DepartmentID;</code></pre>
+                            
+                            <p>示例2: 表数据去重后与另一表关联</p>
+                            <pre><code>CREATE VIEW vw_DistinctPatientLatestExam AS
+WITH DistinctPatients AS (
+    SELECT DISTINCT PatientID, Name, Gender, BirthDate
+    FROM Patients
+),
+LatestExams AS (
+    SELECT *,
+        ROW_NUMBER() OVER (PARTITION BY PatientID ORDER BY ExamDate DESC) AS RowNum
+    FROM Exams
+)
+SELECT p.*, e.ExamID, e.ExamDate, e.Result
+FROM DistinctPatients p
+LEFT JOIN LatestExams e ON p.PatientID = e.PatientID AND e.RowNum = 1;</code></pre>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Views" class="btn btn-secondary">返回列表</a>
+                            <button type="submit" class="btn btn-primary">创建视图</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // 简单增强textarea为代码编辑器（如果需要更复杂的功能，可以集成CodeMirror等编辑器）
+        $(document).ready(function() {
+            // 设置tab键在textarea中插入制表符而不是切换焦点
+            $('#SqlDefinition').on('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    
+                    // 获取当前光标位置
+                    var start = this.selectionStart;
+                    var end = this.selectionEnd;
+                    
+                    // 设置新值（在光标位置插入制表符）
+                    $(this).val($(this).val().substring(0, start) + 
+                                '    ' + 
+                                $(this).val().substring(end));
+                    
+                    // 重新设置光标位置
+                    this.selectionStart = this.selectionEnd = start + 4;
+                }
+            });
+        });
+    </script>
+} 
