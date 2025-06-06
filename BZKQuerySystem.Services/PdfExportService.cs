@@ -17,245 +17,404 @@ namespace BZKQuerySystem.Services
 {
     public class PdfExportOptions
     {
-        public string Title { get; set; } = "²éÑ¯±¨±í";
-        public string Author { get; set; } = "BZK²éÑ¯ÏµÍ³";
+        public string Title { get; set; } = "æŸ¥è¯¢ç»“æœ";
+        public string Author { get; set; } = "BZKæŸ¥è¯¢ç³»ç»Ÿ";
         public bool IncludeTimestamp { get; set; } = true;
         public bool IncludePageNumbers { get; set; } = true;
         public int MaxRowsPerPage { get; set; } = 50;
-        public bool LandscapeOrientation { get; set; } = true; // Ä¬ÈÏºáÏò
+        public bool LandscapeOrientation { get; set; } = true; // é»˜è®¤ç«–å±
     }
 
     public class PdfExportService
     {
         /// <summary>
-        /// Òì²½µ¼³öÊı¾İ±íµ½PDF
+        /// åŒæ­¥PDFç”Ÿæˆ
         /// </summary>
-        /// <param name="data">Òªµ¼³öµÄÊı¾İ±í</param>
-        /// <param name="options">µ¼³öÑ¡Ïî</param>
-        /// <returns>PDFÎÄ¼şµÄ×Ö½ÚÊı×é</returns>
+        /// <param name="data">è¦ç”ŸæˆPDFçš„æ•°æ®è¡¨</param>
+        /// <param name="options">å¯é€‰å‚æ•°</param>
+        /// <returns>PDFæ–‡ä»¶çš„å­—èŠ‚æ•°ç»„</returns>
         public async Task<byte[]> ExportToPdfAsync(DataTable data, PdfExportOptions? options = null)
         {
             return await Task.Run(() => ExportToPdf(data, options ?? new PdfExportOptions()));
         }
 
         /// <summary>
-        /// Í¬²½PDFµ¼³ö
+        /// åŒæ­¥PDFç”Ÿæˆ
         /// </summary>
         private byte[] ExportToPdf(DataTable data, PdfExportOptions options)
         {
             try
             {
+                Console.WriteLine($"å¼€å§‹ç”ŸæˆPDF: è¡¨æ•°é‡: {data?.Rows?.Count ?? 0}, åˆ—æ•°é‡: {data?.Columns?.Count ?? 0}");
+
+                // éªŒè¯æ•°æ®
+                if (data == null)
+                {
+                    Console.WriteLine("PDFå¯¼å‡ºé”™è¯¯: æ•°æ®è¡¨ä¸ºç©º");
+                    return CreateErrorPdf("æ•°æ®è¡¨ä¸ºç©º");
+                }
+
+                if (data.Columns.Count == 0)
+                {
+                    Console.WriteLine("PDFå¯¼å‡ºé”™è¯¯: æ•°æ®è¡¨æ²¡æœ‰åˆ—å®šä¹‰");
+                    return CreateErrorPdf("æ•°æ®è¡¨æ²¡æœ‰åˆ—å®šä¹‰");
+                }
+
                 using var memoryStream = new MemoryStream();
                 using var pdfWriter = new PdfWriter(memoryStream);
                 using var pdfDocument = new PdfDocument(pdfWriter);
-                
-                // ÉèÖÃÒ³Ãæ´óĞ¡ºÍ·½Ïò
+
+                // è®¾ç½®é¡µé¢å¤§å°å’Œæ–¹å‘
                 PageSize pageSize = options.LandscapeOrientation ? PageSize.A4.Rotate() : PageSize.A4;
                 using var document = new Document(pdfDocument, pageSize);
 
-                // ÉèÖÃÎÄµµÔªÊı¾İ
-                var documentInfo = pdfDocument.GetDocumentInfo();
-                documentInfo.SetTitle(options.Title);
-                documentInfo.SetAuthor(options.Author);
-                documentInfo.SetCreator("BZK²éÑ¯ÏµÍ³");
-                documentInfo.SetSubject("Êı¾İ²éÑ¯±¨±í");
+                // è®¾ç½®æ–‡æ¡£å…ƒæ•°æ®
+                try
+                {
+                    var documentInfo = pdfDocument.GetDocumentInfo();
+                    documentInfo.SetTitle(options.Title ?? "æŸ¥è¯¢ç»“æœ");
+                    documentInfo.SetAuthor(options.Author ?? "BZKæŸ¥è¯¢ç³»ç»Ÿ");
+                    documentInfo.SetCreator("BZKæŸ¥è¯¢ç³»ç»Ÿ");
+                    documentInfo.SetSubject("æ•°æ®æŸ¥è¯¢æŠ¥å‘Š");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"è®¾ç½®PDFå…ƒæ•°æ®æ—¶å‡ºé”™: {ex.Message}");
+                }
 
-                // ´´½¨Ö§³ÖÖĞÎÄµÄ×ÖÌå
+                // åˆ›å»ºæ”¯æŒä¸­æ–‡çš„å­—ä½“
                 PdfFont font = CreateChineseSupportFont();
+                if (font == null)
+                {
+                    Console.WriteLine("PDFå¯¼å‡ºé”™è¯¯: æ— æ³•åˆ›å»ºå­—ä½“");
+                    return CreateErrorPdf("æ— æ³•åˆ›å»ºå­—ä½“");
+                }
 
-                // Ìí¼Ó±êÌâ
+                // æ·»åŠ æ ‡é¢˜
                 if (!string.IsNullOrEmpty(options.Title))
                 {
-                    var title = new Paragraph(options.Title)
-                        .SetFont(font)
-                        .SetFontSize(16)
-                        .SetBold()
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetMarginBottom(20);
-                    document.Add(title);
+                    try
+                    {
+                        var title = new Paragraph(options.Title)
+                            .SetFont(font)
+                            .SetFontSize(16)
+                            .SetBold()
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetMarginBottom(20);
+                        document.Add(title);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"æ·»åŠ PDFæ ‡é¢˜æ—¶å‡ºé”™: {ex.Message}");
+                    }
                 }
 
-                // Ìí¼ÓÊ±¼ä´Á
+                // æ·»åŠ æ—¶é—´æˆ³
                 if (options.IncludeTimestamp)
                 {
-                    var timestamp = new Paragraph($"Éú³ÉÊ±¼ä: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
-                        .SetFont(font)
-                        .SetFontSize(10)
-                        .SetTextAlignment(TextAlignment.RIGHT)
-                        .SetMarginBottom(15);
-                    document.Add(timestamp);
+                    try
+                    {
+                        var timestamp = new Paragraph($"ç”Ÿæˆæ—¶é—´: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
+                            .SetFont(font)
+                            .SetFontSize(10)
+                            .SetTextAlignment(TextAlignment.RIGHT)
+                            .SetMarginBottom(15);
+                        document.Add(timestamp);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"æ·»åŠ PDFæ—¶é—´æˆ³æ—¶å‡ºé”™: {ex.Message}");
+                    }
                 }
 
-                // ´´½¨±í¸ñ
-                if (data.Rows.Count > 0)
+                // æ·»åŠ æ•°æ®è¡¨
+                if (data.Rows.Count > 0 && data.Columns.Count > 0)
                 {
-                    var table = CreatePdfTable(data, font, options.LandscapeOrientation);
-                    document.Add(table);
+                    try
+                    {
+                        var table = CreatePdfTable(data, font, options.LandscapeOrientation);
+                        if (table != null)
+                        {
+                            document.Add(table);
 
-                    // Ìí¼ÓÍ³¼ÆĞÅÏ¢
-                    var summary = new Paragraph($"×Ü¼ÇÂ¼Êı: {data.Rows.Count}")
-                        .SetFont(font)
-                        .SetFontSize(10)
-                        .SetMarginTop(15)
-                        .SetTextAlignment(TextAlignment.RIGHT);
-                    document.Add(summary);
+                            // æ·»åŠ ç»Ÿè®¡ä¿¡æ¯
+                            var summary = new Paragraph($"æ€»è®°å½•æ•°: {data.Rows.Count}")
+                                .SetFont(font)
+                                .SetFontSize(10)
+                                .SetMarginTop(15)
+                                .SetTextAlignment(TextAlignment.RIGHT);
+                            document.Add(summary);
+                        }
+                        else
+                        {
+                            Console.WriteLine("PDFå¯¼å‡ºè­¦å‘Š: æ— æ³•åˆ›å»ºæ•°æ®è¡¨");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"åˆ›å»ºPDFæ•°æ®è¡¨æ—¶å‡ºé”™: {ex.Message}");
+                        // æ·»åŠ é”™è¯¯ä¿¡æ¯è€Œä¸æ˜¯å®Œå…¨å¤±è´¥
+                        var errorMsg = new Paragraph($"æ•°æ®è¡¨ç”Ÿæˆå¤±è´¥: {ex.Message}")
+                            .SetFont(font)
+                            .SetFontSize(12)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetMarginTop(50);
+                        document.Add(errorMsg);
+                    }
                 }
                 else
                 {
-                    var noDataMsg = new Paragraph("Ã»ÓĞ¿ÉÏÔÊ¾µÄÊı¾İ")
-                        .SetFont(font)
-                        .SetFontSize(12)
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetMarginTop(50);
-                    document.Add(noDataMsg);
+                    try
+                    {
+                        var noDataMsg = new Paragraph("æ²¡æœ‰å¯ä»¥æ˜¾ç¤ºçš„æ•°æ®")
+                            .SetFont(font)
+                            .SetFontSize(12)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetMarginTop(50);
+                        document.Add(noDataMsg);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"æ·»åŠ æ— æ•°æ®æ¶ˆæ¯æ—¶å‡ºé”™: {ex.Message}");
+                    }
                 }
 
-                // Ìí¼ÓÒ³Âë
+                // æ·»åŠ é¡µç 
                 if (options.IncludePageNumbers)
                 {
-                    AddPageNumbers(pdfDocument, font);
+                    try
+                    {
+                        AddPageNumbers(pdfDocument, font);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"æ·»åŠ PDFé¡µç æ—¶å‡ºé”™: {ex.Message}");
+                    }
                 }
 
-                // È·±£ÎÄµµÕıÈ·¹Ø±Õ
-                document.Close();
-                pdfDocument.Close();
-                pdfWriter.Close();
+                // ç¡®ä¿æ–‡æ¡£æ­£ç¡®å…³é—­
+                try
+                {
+                    document.Close();
+                    pdfDocument.Close();
+                    pdfWriter.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"å…³é—­PDFæ–‡æ¡£æ—¶å‡ºé”™: {ex.Message}");
+                }
 
-                return memoryStream.ToArray();
+                var result = memoryStream.ToArray();
+                Console.WriteLine($"PDFç”ŸæˆæˆåŠŸï¼Œæ–‡ä»¶å¤§å°: {result.Length} å­—èŠ‚");
+                return result;
             }
             catch (Exception ex)
             {
-                // ¼ÇÂ¼´íÎó²¢·µ»Ø¼òµ¥µÄ´íÎóPDF
-                Console.WriteLine($"PDFµ¼³ö´íÎó: {ex.Message}");
+                // è®°å½•é”™è¯¯å¹¶è¿”å›ç®€å•çš„é”™è¯¯PDF
+                Console.WriteLine($"PDFç”Ÿæˆå‡ºé”™: {ex.Message}");
+                Console.WriteLine($"é”™è¯¯å †æ ˆ: {ex.StackTrace}");
                 return CreateErrorPdf(ex.Message);
             }
         }
 
         /// <summary>
-        /// ´´½¨Ö§³ÖÖĞÎÄµÄ×ÖÌå
+        /// åˆ›å»ºæ”¯æŒä¸­æ–‡çš„å­—ä½“
         /// </summary>
         private PdfFont CreateChineseSupportFont()
         {
             try
             {
-                // ·½°¸1: ³¢ÊÔÊ¹ÓÃWindowsÏµÍ³ÖĞÎÄ×ÖÌå
+                // æ–¹æ¡ˆ1: å°è¯•ä½¿ç”¨Windowsç³»ç»Ÿå®‹ä½“å­—ä½“
                 try
                 {
-                    // ³¢ÊÔÊ¹ÓÃÏµÍ³µÄËÎÌå×ÖÌåÎÄ¼ş
-                    string fontPath = @"C:\Windows\Fonts\simsun.ttc,0"; // ËÎÌå
+                    string fontPath = @"C:\Windows\Fonts\simsun.ttc,0"; // å®‹ä½“
                     if (System.IO.File.Exists(@"C:\Windows\Fonts\simsun.ttc"))
                     {
+                        Console.WriteLine("ä½¿ç”¨ç³»ç»Ÿå®‹ä½“å­—ä½“");
                         return PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"åŠ è½½å®‹ä½“å­—ä½“å¤±è´¥: {ex.Message}");
+                }
 
-                // ·½°¸2: ³¢ÊÔÊ¹ÓÃÆäËûÏµÍ³×ÖÌå
+                // æ–¹æ¡ˆ2: å°è¯•ä½¿ç”¨å¾®è½¯é›…é»‘å­—ä½“
                 try
                 {
-                    string fontPath = @"C:\Windows\Fonts\msyh.ttc,0"; // Î¢ÈíÑÅºÚ
+                    string fontPath = @"C:\Windows\Fonts\msyh.ttc,0"; // å¾®è½¯é›…é»‘
                     if (System.IO.File.Exists(@"C:\Windows\Fonts\msyh.ttc"))
                     {
+                        Console.WriteLine("ä½¿ç”¨å¾®è½¯é›…é»‘å­—ä½“");
                         return PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"åŠ è½½å¾®è½¯é›…é»‘å­—ä½“å¤±è´¥: {ex.Message}");
+                }
 
-                // ·½°¸3: ³¢ÊÔÊ¹ÓÃÄÚÖÃ×ÖÌå
+                // æ–¹æ¡ˆ3: å°è¯•ä½¿ç”¨å…¶ä»–ä¸­æ–‡å­—ä½“
                 try
                 {
+                    Console.WriteLine("å°è¯•ä½¿ç”¨STSong-Lightå­—ä½“");
                     return PdfFontFactory.CreateFont("STSong-Light", "UniGB-UCS2-H");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"åŠ è½½STSong-Lightå­—ä½“å¤±è´¥: {ex.Message}");
+                }
 
-                // ·½°¸4: Ê¹ÓÃÖ§³Ö»ù´¡UnicodeµÄ×ÖÌå
+                // æ–¹æ¡ˆ4: ä½¿ç”¨æ”¯æŒåŸºç¡€Unicodeçš„å­—ä½“
                 try
                 {
+                    Console.WriteLine("ä½¿ç”¨Times Roman Unicodeå­—ä½“");
                     return PdfFontFactory.CreateFont(StandardFonts.TIMES_ROMAN, PdfEncodings.IDENTITY_H);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"åŠ è½½Times Roman Unicodeå­—ä½“å¤±è´¥: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"×ÖÌå´´½¨´íÎó: {ex.Message}");
+                Console.WriteLine($"å­—ä½“åˆ›å»ºè¿‡ç¨‹å‡ºé”™: {ex.Message}");
             }
 
-            // ×îºóµÄ±¸Ñ¡·½°¸£ºÊ¹ÓÃ±ê×¼×ÖÌå
-            return PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+            // æœ€åå¤‡é€‰æ–¹æ¡ˆï¼šä½¿ç”¨æ ‡å‡†å­—ä½“
+            try
+            {
+                Console.WriteLine("ä½¿ç”¨Helveticaæ ‡å‡†å­—ä½“");
+                return PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"åˆ›å»ºæ ‡å‡†å­—ä½“å¤±è´¥: {ex.Message}");
+                return null;
+            }
         }
 
         /// <summary>
-        /// ´´½¨PDF±í¸ñ
+        /// åˆ›å»ºPDFæ•°æ®è¡¨
         /// </summary>
         private Table CreatePdfTable(DataTable data, PdfFont font, bool isLandscape)
         {
-            var table = new Table(data.Columns.Count);
-            table.SetWidth(UnitValue.CreatePercentValue(100));
-
-            // ¸ù¾İÁĞÊıµ÷Õû×ÖÌå´óĞ¡
-            int fontSize = data.Columns.Count > 10 ? 7 : (data.Columns.Count > 6 ? 8 : 9);
-            int headerFontSize = fontSize + 1;
-
-            // Ìí¼Ó±íÍ·
-            foreach (DataColumn column in data.Columns)
+            try
             {
-                var headerText = GetDisplayColumnName(column.ColumnName);
-                var cell = new Cell()
-                    .SetBackgroundColor(new DeviceRgb(220, 220, 220))
-                    .SetFont(font)
-                    .SetFontSize(headerFontSize)
-                    .SetBold()
-                    .SetTextAlignment(TextAlignment.CENTER)
-                    .SetPadding(4)
-                    .Add(new Paragraph(headerText));
-                
-                table.AddHeaderCell(cell);
-            }
-
-            // Ìí¼ÓÊı¾İĞĞ
-            for (int row = 0; row < data.Rows.Count; row++)
-            {
-                for (int col = 0; col < data.Columns.Count; col++)
+                if (data == null || data.Columns.Count == 0)
                 {
-                    var cellValue = data.Rows[row][col]?.ToString() ?? "";
-                    
-                    // ½Ø¶Ï¹ı³¤µÄÎÄ±¾
-                    if (cellValue.Length > 50)
-                    {
-                        cellValue = cellValue.Substring(0, 47) + "...";
-                    }
-
-                    var backgroundColor = row % 2 == 0 ? 
-                        ColorConstants.WHITE : 
-                        new DeviceRgb(248, 248, 248);
-                    
-                    var cell = new Cell()
-                        .SetBackgroundColor(backgroundColor)
-                        .SetFont(font)
-                        .SetFontSize(fontSize)
-                        .SetTextAlignment(TextAlignment.LEFT)
-                        .SetPadding(3)
-                        .Add(new Paragraph(cellValue));
-                    
-                    table.AddCell(cell);
+                    Console.WriteLine("CreatePdfTableé”™è¯¯: æ•°æ®è¡¨ä¸ºç©ºæˆ–æ²¡æœ‰åˆ—");
+                    return null;
                 }
-            }
 
-            return table;
+                Console.WriteLine($"åˆ›å»ºPDFè¡¨æ ¼: {data.Columns.Count}åˆ—, {data.Rows.Count}è¡Œ");
+
+                var table = new Table(data.Columns.Count);
+                table.SetWidth(UnitValue.CreatePercentValue(100));
+
+                // æ ¹æ®åˆ—æ•°è°ƒæ•´å­—ä½“å¤§å°
+                int fontSize = data.Columns.Count > 10 ? 7 : (data.Columns.Count > 6 ? 8 : 9);
+                int headerFontSize = fontSize + 1;
+
+                // æ·»åŠ è¡¨å¤´
+                foreach (DataColumn column in data.Columns)
+                {
+                    try
+                    {
+                        var headerText = GetDisplayColumnName(column.ColumnName);
+                        var cell = new Cell()
+                            .SetBackgroundColor(new DeviceRgb(220, 220, 220))
+                            .SetFont(font)
+                            .SetFontSize(headerFontSize)
+                            .SetBold()
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetPadding(4)
+                            .Add(new Paragraph(headerText ?? "æœªçŸ¥"));
+
+                        table.AddHeaderCell(cell);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"æ·»åŠ è¡¨å¤´å•å…ƒæ ¼æ—¶å‡ºé”™: {ex.Message}");
+                        // æ·»åŠ ä¸€ä¸ªç®€å•çš„é”™è¯¯å•å…ƒæ ¼
+                        var errorCell = new Cell()
+                            .SetBackgroundColor(new DeviceRgb(220, 220, 220))
+                            .SetFont(font)
+                            .SetFontSize(headerFontSize)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetPadding(4)
+                            .Add(new Paragraph("é”™è¯¯"));
+                        table.AddHeaderCell(errorCell);
+                    }
+                }
+
+                // æ·»åŠ æ•°æ®è¡Œ
+                for (int row = 0; row < data.Rows.Count; row++)
+                {
+                    for (int col = 0; col < data.Columns.Count; col++)
+                    {
+                        try
+                        {
+                            var cellValue = data.Rows[row][col]?.ToString() ?? "";
+
+                            // æˆªæ–­è¿‡é•¿çš„æ–‡æœ¬
+                            if (cellValue.Length > 50)
+                            {
+                                cellValue = cellValue.Substring(0, 47) + "...";
+                            }
+
+                            var backgroundColor = row % 2 == 0 ?
+                                ColorConstants.WHITE :
+                                new DeviceRgb(248, 248, 248);
+
+                            var cell = new Cell()
+                                .SetBackgroundColor(backgroundColor)
+                                .SetFont(font)
+                                .SetFontSize(fontSize)
+                                .SetTextAlignment(TextAlignment.LEFT)
+                                .SetPadding(3)
+                                .Add(new Paragraph(cellValue));
+
+                            table.AddCell(cell);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"æ·»åŠ æ•°æ®å•å…ƒæ ¼æ—¶å‡ºé”™(è¡Œ{row},åˆ—{col}): {ex.Message}");
+                            // æ·»åŠ ä¸€ä¸ªç®€å•çš„é”™è¯¯å•å…ƒæ ¼
+                            var errorCell = new Cell()
+                                .SetFont(font)
+                                .SetFontSize(fontSize)
+                                .SetTextAlignment(TextAlignment.LEFT)
+                                .SetPadding(3)
+                                .Add(new Paragraph("é”™è¯¯"));
+                            table.AddCell(errorCell);
+                        }
+                    }
+                }
+
+                Console.WriteLine("PDFè¡¨æ ¼åˆ›å»ºæˆåŠŸ");
+                return table;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"CreatePdfTableæ•´ä½“å‡ºé”™: {ex.Message}");
+                Console.WriteLine($"é”™è¯¯å †æ ˆ: {ex.StackTrace}");
+                return null;
+            }
         }
 
         /// <summary>
-        /// Ìí¼ÓÒ³Âë
+        /// æ·»åŠ é¡µç 
         /// </summary>
         private void AddPageNumbers(PdfDocument pdfDocument, PdfFont font)
         {
             int numberOfPages = pdfDocument.GetNumberOfPages();
-            
+
             for (int i = 1; i <= numberOfPages; i++)
             {
                 var page = pdfDocument.GetPage(i);
                 var pageSize = page.GetPageSize();
-                
+
                 var canvas = new iText.Kernel.Pdf.Canvas.PdfCanvas(page);
                 canvas.SaveState()
                     .BeginText()
@@ -268,14 +427,14 @@ namespace BZKQuerySystem.Services
         }
 
         /// <summary>
-        /// »ñÈ¡ÏÔÊ¾µÄÁĞÃû
+        /// è·å–æ˜¾ç¤ºåˆ—å
         /// </summary>
         private string GetDisplayColumnName(string columnName)
         {
             if (string.IsNullOrEmpty(columnName))
-                return "ÁĞ";
+                return "æœªçŸ¥";
 
-            // Èç¹ûÁĞÃû°üº¬ÏÂ»®ÏßÇÒ³¤¶È´óÓÚ10£¬Ôò·Ö¸î²¢·µ»Ø×îºóÒ»¸ö²¿·Ö
+            // å¦‚æœåˆ—ååŒ…å«ä¸‹åˆ’çº¿ä¸”é•¿åº¦å¤§äº10ï¼Œåˆ™æ‹†åˆ†å¹¶è¿”å›æœ€åä¸€ä¸ªéƒ¨åˆ†
             if (columnName.Contains("_") && columnName.Length > 10)
             {
                 var parts = columnName.Split('_');
@@ -289,7 +448,7 @@ namespace BZKQuerySystem.Services
         }
 
         /// <summary>
-        /// ´´½¨¼òµ¥µÄ´íÎóPDF
+        /// åˆ›å»ºç®€å•çš„é”™è¯¯PDF
         /// </summary>
         private byte[] CreateErrorPdf(string errorMessage)
         {
@@ -302,8 +461,8 @@ namespace BZKQuerySystem.Services
 
                 var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
 
-                // Ìí¼Ó´íÎóĞÅÏ¢
-                var errorParagraph = new Paragraph("PDFµ¼³ö´íÎó")
+                // æ·»åŠ é”™è¯¯ä¿¡æ¯
+                var errorParagraph = new Paragraph("PDFç”Ÿæˆé”™è¯¯")
                     .SetFont(font)
                     .SetFontSize(16)
                     .SetBold()
@@ -311,7 +470,7 @@ namespace BZKQuerySystem.Services
                     .SetMarginBottom(20);
                 document.Add(errorParagraph);
 
-                var messageParagraph = new Paragraph($"´íÎó: {errorMessage}")
+                var messageParagraph = new Paragraph($"é”™è¯¯: {errorMessage}")
                     .SetFont(font)
                     .SetFontSize(12)
                     .SetTextAlignment(TextAlignment.LEFT);
@@ -322,23 +481,23 @@ namespace BZKQuerySystem.Services
             }
             catch
             {
-                // Èç¹ûÁ¬´íÎóPDF¶¼Ê§°Ü£¬·µ»Ø¿ÕÊı×é
+                // å¦‚æœåˆ›å»ºPDFå¤±è´¥ï¼Œè¿”å›ç©ºå­—èŠ‚æ•°ç»„
                 return new byte[0];
             }
         }
 
         /// <summary>
-        /// Òì²½µ¼³ö¶à¸öÊı¾İ±íµ½PDF
+        /// åŒæ­¥ç”Ÿæˆå¤šä¸ªæ•°æ®è¡¨çš„PDF
         /// </summary>
         public async Task<byte[]> ExportMultipleToPdfAsync(
-            Dictionary<string, DataTable> dataTables, 
-            string title = "¶à¸öÊı¾İ±í±¨±í")
+            Dictionary<string, DataTable> dataTables,
+            string title = "å¤šä¸ªæ•°æ®è¡¨")
         {
             return await Task.Run(() => ExportMultipleToPdf(dataTables, title));
         }
 
         /// <summary>
-        /// Í¬²½¶à±íµ¼³ö
+        /// åŒæ­¥ç”Ÿæˆå¤šä¸ªæ•°æ®è¡¨çš„PDF
         /// </summary>
         private byte[] ExportMultipleToPdf(Dictionary<string, DataTable> dataTables, string title)
         {
@@ -347,11 +506,11 @@ namespace BZKQuerySystem.Services
                 using var memoryStream = new MemoryStream();
                 using var pdfWriter = new PdfWriter(memoryStream);
                 using var pdfDocument = new PdfDocument(pdfWriter);
-                using var document = new Document(pdfDocument, PageSize.A4.Rotate()); // ºáÏò²¼¾Ö
+                using var document = new Document(pdfDocument, PageSize.A4.Rotate()); // å¤šé¡µ
 
                 var font = CreateChineseSupportFont();
 
-                // Ìí¼ÓÖ÷±êÌâ
+                // æ·»åŠ ä¸»æ ‡é¢˜
                 var mainTitle = new Paragraph(title)
                     .SetFont(font)
                     .SetFontSize(18)
@@ -360,15 +519,15 @@ namespace BZKQuerySystem.Services
                     .SetMarginBottom(30);
                 document.Add(mainTitle);
 
-                // Ìí¼ÓÉú³ÉÊ±¼ä
-                var timestamp = new Paragraph($"Éú³ÉÊ±¼ä: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
+                // æ·»åŠ ç”Ÿæˆæ—¶é—´
+                var timestamp = new Paragraph($"ç”Ÿæˆæ—¶é—´: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
                     .SetFont(font)
                     .SetFontSize(10)
                     .SetTextAlignment(TextAlignment.RIGHT)
                     .SetMarginBottom(20);
                 document.Add(timestamp);
 
-                // ´¦ÀíÃ¿¸öÊı¾İ±í
+                // æ·»åŠ æ¯ä¸ªæ•°æ®è¡¨
                 int tableIndex = 0;
                 foreach (var kvp in dataTables)
                 {
@@ -377,7 +536,7 @@ namespace BZKQuerySystem.Services
                         document.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
                     }
 
-                    // Ìí¼Ó±í±êÌâ
+                    // æ·»åŠ è¡¨æ ‡é¢˜
                     var tableTitle = new Paragraph(kvp.Key)
                         .SetFont(font)
                         .SetFontSize(14)
@@ -385,13 +544,13 @@ namespace BZKQuerySystem.Services
                         .SetMarginBottom(15);
                     document.Add(tableTitle);
 
-                    // Ìí¼Ó±í¸ñ
+                    // æ·»åŠ æ•°æ®è¡¨
                     if (kvp.Value.Rows.Count > 0)
                     {
                         var table = CreatePdfTable(kvp.Value, font, true);
                         document.Add(table);
 
-                        var summary = new Paragraph($"¼ÇÂ¼Êı: {kvp.Value.Rows.Count}")
+                        var summary = new Paragraph($"è®°å½•æ•°: {kvp.Value.Rows.Count}")
                             .SetFont(font)
                             .SetFontSize(10)
                             .SetMarginTop(10)
@@ -400,7 +559,7 @@ namespace BZKQuerySystem.Services
                     }
                     else
                     {
-                        var noDataMsg = new Paragraph("Ã»ÓĞ¿ÉÏÔÊ¾µÄÊı¾İ")
+                        var noDataMsg = new Paragraph("æ²¡æœ‰å¯ä»¥æ˜¾ç¤ºçš„æ•°æ®")
                             .SetFont(font)
                             .SetFontSize(12)
                             .SetTextAlignment(TextAlignment.CENTER)
@@ -419,25 +578,25 @@ namespace BZKQuerySystem.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"¶à±íPDFµ¼³ö´íÎó: {ex.Message}");
+                Console.WriteLine($"ç”ŸæˆPDFæ—¶å‡ºé”™: {ex.Message}");
                 return CreateErrorPdf(ex.Message);
             }
         }
 
         /// <summary>
-        /// ±£´æPDFÎÄ¼şµ½Ö¸¶¨Â·¾¶
+        /// åŒæ­¥ä¿å­˜PDFæ–‡ä»¶åˆ°æŒ‡å®šè·¯å¾„
         /// </summary>
         public async Task<string> SavePdfFileAsync(
-            DataTable data, 
-            string fileName, 
-            string filePath, 
+            DataTable data,
+            string fileName,
+            string filePath,
             PdfExportOptions? options = null)
         {
             var pdfBytes = await ExportToPdfAsync(data, options);
             var fullPath = System.IO.Path.Combine(filePath, fileName);
-            
+
             await File.WriteAllBytesAsync(fullPath, pdfBytes);
             return fullPath;
         }
     }
-} 
+}

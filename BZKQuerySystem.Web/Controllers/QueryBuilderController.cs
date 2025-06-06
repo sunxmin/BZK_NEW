@@ -34,21 +34,21 @@ namespace BZKQuerySystem.Web.Controllers
         public async Task<IActionResult> Index()
         {
             string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            
-            Console.WriteLine($"Index: ÓÃ»§ÒÑµÇÂ¼£¬userId: {userId}");
-            
-            // »ñÈ¡ÓÃ»§ÔÊĞí·ÃÎÊµÄ±í
+
+            Console.WriteLine($"Index: ï¿½Ã»ï¿½ï¿½Ñµï¿½Â¼ï¿½ï¿½userId: {userId}");
+
+            // ï¿½ï¿½È¡ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÊµÄ±ï¿½
             var tables = await _queryBuilderService.GetAllowedTablesForUserAsync(userId);
-            Console.WriteLine($"Index: »ñÈ¡µ½tables.Count¸ö±í");
-            
-            // »ñÈ¡ÓÃ»§±£´æµÄËùÓĞ²éÑ¯
+            Console.WriteLine($"Index: ï¿½ï¿½È¡ï¿½ï¿½tables.Countï¿½ï¿½ï¿½ï¿½");
+
+            // ï¿½ï¿½È¡ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ²ï¿½Ñ¯
             var savedQueries = await _queryBuilderService.GetSavedQueriesAsync(userId);
-            
-            // »ñÈ¡¹²Ïí²éÑ¯µÄÓÃ»§
+
+            // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Ã»ï¿½
             Dictionary<int, List<string>> sharedQueryUsers = new Dictionary<int, List<string>>();
             foreach (var query in savedQueries)
             {
-                // »ñÈ¡¹²Ïí²éÑ¯µÄÓÃ»§
+                // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Ã»ï¿½
                 if (query.CreatedBy == User.Identity.Name)
                 {
                     var sharedUsers = await _queryBuilderService.GetQueryShareUsersAsync(query.Id);
@@ -58,30 +58,30 @@ namespace BZKQuerySystem.Web.Controllers
                     }
                 }
             }
-            
-            // Êä³öÓÃ»§±£´æµÄËùÓĞ²éÑ¯
-            Console.WriteLine($"Index: »ñÈ¡µ½savedQueries.Count¸ö²éÑ¯");
+
+            // ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ²ï¿½Ñ¯
+            Console.WriteLine($"Index: ï¿½ï¿½È¡ï¿½ï¿½savedQueries.Countï¿½ï¿½ï¿½ï¿½Ñ¯");
             foreach (var query in savedQueries)
             {
-                Console.WriteLine($"²éÑ¯ID: {query.Id}, ²éÑ¯Ãû³Æ: {query.Name}, ´´½¨Õß: {query.CreatedBy}");
+                Console.WriteLine($"ï¿½ï¿½Ñ¯ID: {query.Id}, ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½: {query.Name}, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {query.CreatedBy}");
             }
-            
-            // ¼ì²éÓÃ»§ÊÇ·ñÓĞÈ¨ÏŞ±£´æ²éÑ¯¡¢¹²Ïí²éÑ¯ºÍµ¼³öÊı¾İ
+
+            // ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ç·ï¿½ï¿½ï¿½È¨ï¿½Ş±ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             bool canSaveQueries = await _userService.HasPermissionAsync(userId, SystemPermissions.SaveQueries);
             bool canShareQueries = await _userService.HasPermissionAsync(userId, SystemPermissions.ShareQueries);
             bool canExportData = await _userService.HasPermissionAsync(userId, SystemPermissions.ExportData);
-            
-            Console.WriteLine($"ÓÃ»§È¨ÏŞ: CanSaveQueries={canSaveQueries}, CanShareQueries={canShareQueries}, CanExportData={canExportData}");
-            
+
+            Console.WriteLine($"ï¿½Ã»ï¿½È¨ï¿½ï¿½: CanSaveQueries={canSaveQueries}, CanShareQueries={canShareQueries}, CanExportData={canExportData}");
+
             ViewBag.Tables = tables;
             ViewBag.SavedQueries = savedQueries;
             ViewBag.CanSaveQueries = canSaveQueries;
             ViewBag.CanShareQueries = canShareQueries;
             ViewBag.CanExportData = canExportData;
             ViewBag.SharedQueryUsers = sharedQueryUsers;
-            
-            Console.WriteLine("Index: ÓÃ»§µÇÂ¼³É¹¦£¬·µ»ØÊÓÍ¼");
-            
+
+            Console.WriteLine("Index: ï¿½Ã»ï¿½ï¿½ï¿½Â¼ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼");
+
             return View();
         }
 
@@ -89,7 +89,7 @@ namespace BZKQuerySystem.Web.Controllers
         public async Task<IActionResult> GetTables()
         {
             string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            
+
             var tables = await _queryBuilderService.GetAllowedTablesForUserAsync(userId);
             return Json(tables);
         }
@@ -100,9 +100,10 @@ namespace BZKQuerySystem.Web.Controllers
             try
             {
                 var columns = await _queryBuilderService.GetColumnsForTableAsync(tableName);
-                
-                // ¼ò»¯ColumnsÊı¾İ
-                var simplifiedColumns = columns.Select(c => new {
+
+                // ï¿½ï¿½Columnsï¿½ï¿½ï¿½ï¿½
+                var simplifiedColumns = columns.Select(c => new
+                {
                     Id = c.Id,
                     TableId = c.TableId,
                     ColumnName = c.ColumnName,
@@ -112,12 +113,12 @@ namespace BZKQuerySystem.Web.Controllers
                     IsPrimaryKey = c.IsPrimaryKey,
                     IsNullable = c.IsNullable
                 }).ToList();
-                
+
                 return Json(simplifiedColumns);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { error = $"»ñÈ¡ColumnsÊ±·¢Éú´íÎó: {ex.Message}" });
+                return BadRequest(new { error = $"ï¿½ï¿½È¡ColumnsÊ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {ex.Message}" });
             }
         }
 
@@ -126,19 +127,49 @@ namespace BZKQuerySystem.Web.Controllers
         {
             try
             {
+                // åŸºæœ¬æ•°æ®éªŒè¯
+                if (query == null)
+                {
+                    return BadRequest(new { error = "æŸ¥è¯¢æ•°æ®ä¸èƒ½ä¸ºç©º" });
+                }
+
+                if (query.Tables == null || query.Tables.Count == 0)
+                {
+                    return BadRequest(new { error = "è¯·é€‰æ‹©è‡³å°‘ä¸€ä¸ªè¡¨è¿›è¡ŒæŸ¥è¯¢" });
+                }
+
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-                
-                // ¼ì²éÓÃ»§ÊÇ·ñÓĞÈ¨ÏŞµ¼³öÊı¾İ
+
+                // ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ç·ï¿½ï¿½ï¿½È¨ï¿½Şµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 bool canExport = await _userService.HasPermissionAsync(userId, SystemPermissions.ExportData);
                 ViewBag.CanExport = canExport;
 
-                // È·±£SQL²éÑ¯Óï¾äÒÔ·ÖºÅ½áÎ²
+                // åˆå§‹åŒ–ç©ºåˆ—è¡¨ä»¥é¿å…nullå¼•ç”¨
+                query.Columns = query.Columns ?? new List<string>();
+                query.JoinConditions = query.JoinConditions ?? new List<string>();
+                query.WhereConditions = query.WhereConditions ?? new List<string>();
+                query.OrderBy = query.OrderBy ?? new List<string>();
+                query.Parameters = query.Parameters ?? new Dictionary<string, object>();
+
+                // æ·»åŠ è°ƒè¯•ä¿¡æ¯
+                Console.WriteLine("=== åç«¯æ¥æ”¶åˆ°çš„æŸ¥è¯¢æ•°æ® ===");
+                Console.WriteLine($"Tables: {string.Join(", ", query.Tables)}");
+                Console.WriteLine($"Columns: {string.Join(", ", query.Columns)}");
+                Console.WriteLine($"JoinConditions: {string.Join(", ", query.JoinConditions)}");
+                Console.WriteLine($"WhereConditions: {string.Join(", ", query.WhereConditions)}");
+                Console.WriteLine($"OrderBy: {string.Join(", ", query.OrderBy)}");
+                Console.WriteLine($"PageSize: {query.PageSize}, PageNumber: {query.PageNumber}");
+                Console.WriteLine("===============================");
+
+                // È·ï¿½ï¿½SQLï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½Ô·ÖºÅ½ï¿½Î²
                 if (!string.IsNullOrEmpty(query.SqlQuery) && !query.SqlQuery.TrimEnd().EndsWith(";"))
                 {
                     query.SqlQuery = query.SqlQuery.TrimEnd() + ";";
                 }
 
-                // »ñÈ¡²éÑ¯×ÜĞĞÊı
+                try
+                {
+                // ï¿½ï¿½È¡ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 int totalRows = await _queryBuilderService.GetTotalRowsAsync(
                     query.Tables,
                     query.Columns,
@@ -146,8 +177,9 @@ namespace BZKQuerySystem.Web.Controllers
                     query.WhereConditions ?? new List<string>(),
                     query.Parameters ?? new Dictionary<string, object>()
                 );
+                    Console.WriteLine($"æŸ¥è¯¢æ€»è¡Œæ•°: {totalRows}");
 
-                // Ö´ĞĞ²éÑ¯
+                // Ö´ï¿½Ğ²ï¿½Ñ¯
                 var dataTable = await _queryBuilderService.ExecuteQueryAsync(
                     query.Tables,
                     query.Columns,
@@ -158,12 +190,13 @@ namespace BZKQuerySystem.Web.Controllers
                     query.PageSize,
                     query.PageNumber
                 );
+                    Console.WriteLine($"æŸ¥è¯¢æ‰§è¡ŒæˆåŠŸï¼Œè¿”å› {dataTable.Rows.Count} è¡Œæ•°æ®");
 
-                // »ñÈ¡²éÑ¯½á¹û
+                // ï¿½ï¿½È¡ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½
                 int pageSize = query.PageSize ?? 0;
                 int totalPages = pageSize > 0 ? (int)Math.Ceiling((double)totalRows / pageSize) : 1;
-                
-                // »ñÈ¡ÍêÕûµÄSQL²éÑ¯Óï¾ä
+
+                // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SQLï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½
                 string sqlQuery = _queryBuilderService.BuildSqlQuery(
                     query.Tables,
                     query.Columns,
@@ -172,12 +205,12 @@ namespace BZKQuerySystem.Web.Controllers
                     query.OrderBy ?? new List<string>()
                 );
 
-                // ¹¹½¨½á¹û¶ÔÏó
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 var result = new
                 {
                     Columns = dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList(),
-                    Rows = dataTable.Rows.Cast<DataRow>().Select(row => 
-                        dataTable.Columns.Cast<DataColumn>().Select(col => 
+                    Rows = dataTable.Rows.Cast<DataRow>().Select(row =>
+                        dataTable.Columns.Cast<DataColumn>().Select(col =>
                             row[col] == DBNull.Value ? null : row[col].ToString()
                         ).ToList()
                     ).ToList(),
@@ -192,6 +225,15 @@ namespace BZKQuerySystem.Web.Controllers
             }
             catch (Exception ex)
             {
+                    Console.WriteLine($"æŸ¥è¯¢æ‰§è¡Œå¤±è´¥: {ex.Message}");
+                    Console.WriteLine($"å †æ ˆè·Ÿè¸ª: {ex.StackTrace}");
+                    return BadRequest(new { error = $"æŸ¥è¯¢æ‰§è¡Œå¤±è´¥: {ex.Message}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"æŸ¥è¯¢å¤„ç†å¤±è´¥: {ex.Message}");
+                Console.WriteLine($"å †æ ˆè·Ÿè¸ª: {ex.StackTrace}");
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -202,35 +244,35 @@ namespace BZKQuerySystem.Web.Controllers
         {
             try
             {
-                // »ñÈ¡ÓÃ»§ID
+                // è·å–ç”¨æˆ·ID
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return BadRequest(new { error = "ÎŞ·¨Ê¶±ğµ±Ç°ÓÃ»§" });
+                    return BadRequest(new { error = "æ— æ³•è¯†åˆ«å½“å‰ç”¨æˆ·" });
                 }
-                
-                // ÑéÖ¤ÓÃ»§È¨ÏŞ
+
+                // éªŒè¯ç”¨æˆ·æƒé™
                 bool canExport = await _userService.HasPermissionAsync(userId, SystemPermissions.ExportData);
                 if (!canExport)
                 {
                     return Forbid();
                 }
-                
-                // ÑéÖ¤ÇëÇóÊı¾İ
+
+                // éªŒè¯è¯·æ±‚æ•°æ®
                 if (query == null || query.Tables == null || query.Tables.Count == 0)
                 {
-                    return BadRequest(new { error = "ÇëÇóÊı¾İÎŞĞ§£¬ÇëÈ·±£ÒÑÑ¡Ôñ±í" });
+                    return BadRequest(new { error = "è¯·æ±‚æ•°æ®æ— æ•ˆï¼Œè¯·ç¡®ä¿å·²é€‰æ‹©è¡¨" });
                 }
-                
-                Console.WriteLine($"¿ªÊ¼µ¼³öExcel: ±íÊıÁ¿:{query.Tables.Count}, ÁĞÊıÁ¿:{query.Columns?.Count ?? 0}");
-                
-                // È·±£Columns²»Îªnull
+
+                Console.WriteLine($"å¼€å§‹å¯¼å‡ºExcel: è¡¨æ•°é‡:{query.Tables.Count}, åˆ—æ•°é‡:{query.Columns?.Count ?? 0}");
+
+                // ç¡®ä¿Columnsä¸ä¸ºnull
                 if (query.Columns == null)
                 {
                     query.Columns = new List<string>();
                 }
-                
-                // Ö´ĞĞ²éÑ¯
+
+                // æ‰§è¡ŒæŸ¥è¯¢
                 var dataTable = await _queryBuilderService.ExecuteQueryAsync(
                     query.Tables,
                     query.Columns,
@@ -239,37 +281,37 @@ namespace BZKQuerySystem.Web.Controllers
                     query.OrderBy ?? new List<string>(),
                     query.Parameters ?? new Dictionary<string, object>()
                 );
-                
-                Console.WriteLine($"²éÑ¯Ö´ĞĞÍê³É£¬»ñÈ¡µ½{dataTable.Rows.Count}ÌõÊı¾İ£¬¿ªÊ¼µ¼³öExcel");
 
-                // µ¼³öExcel
-                // È·±£ÎÄ¼şÃû²»Îª¿Õ
-                string sheetName = !string.IsNullOrEmpty(query.QueryName) ? query.QueryName : "²éÑ¯±¨±í";
-                
+                Console.WriteLine($"æŸ¥è¯¢æ‰§è¡Œå®Œæˆï¼Œè·å–åˆ°{dataTable.Rows.Count}è¡Œæ•°æ®ï¼Œå¼€å§‹ç”ŸæˆExcel");
+
+                // ç”ŸæˆExcel
+                // ç¡®ä¿æ–‡ä»¶åç§°ä¸ä¸ºç©º
+                string sheetName = !string.IsNullOrEmpty(query.QueryName) ? query.QueryName : "æŸ¥è¯¢ç»“æœ";
+
                 byte[] fileContents = _excelExportService.ExportToExcel(
-                    dataTable, 
-                    sheetName, 
-                    $"²éÑ¯±¨±í: {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}"
+                    dataTable,
+                    sheetName,
+                    $"æŸ¥è¯¢ç»“æœ: {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}"
                 );
-                
-                Console.WriteLine($"Excelµ¼³öÍê³É£¬ÎÄ¼ş´óĞ¡: {fileContents.Length} ×Ö½Ú");
 
-                // Éú³ÉÎÄ¼şÃû£¨²éÑ¯Ãû³Æ+ÈÕÆÚ£©
+                Console.WriteLine($"Excelç”Ÿæˆå®Œæˆï¼Œæ–‡ä»¶å¤§å°: {fileContents.Length} å­—èŠ‚");
+
+                // ç”Ÿæˆæ–‡ä»¶åï¼ˆæŸ¥è¯¢åç§°+æ—¥æœŸï¼‰
                 string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
                 string fileName = $"{sheetName}_{dateStr}.xlsx";
-                
-                // ·µ»ØExcelÎÄ¼ş
+
+                // è¿”å›Excelæ–‡ä»¶
                 return File(
-                    fileContents, 
+                    fileContents,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     fileName
                 );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"µ¼³öExcelÊ±·¢Éú´íÎó: {ex.Message}");
-                Console.WriteLine($"´íÎó¶ÑÕ»: {ex.StackTrace}");
-                return BadRequest(new { error = $"µ¼³öExcelÊ§°Ü: {ex.Message}" });
+                Console.WriteLine($"å¯¼å‡ºExcelæ—¶å‘ç”Ÿé”™è¯¯: {ex.Message}");
+                Console.WriteLine($"é”™è¯¯å †æ ˆ: {ex.StackTrace}");
+                return BadRequest(new { error = $"å¯¼å‡ºExcelå¤±è´¥: {ex.Message}" });
             }
         }
 
@@ -279,35 +321,35 @@ namespace BZKQuerySystem.Web.Controllers
         {
             try
             {
-                // »ñÈ¡ÓÃ»§ID
+                // è·å–ç”¨æˆ·ID
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return BadRequest(new { error = "ÎŞ·¨Ê¶±ğµ±Ç°ÓÃ»§" });
+                    return BadRequest(new { error = "æ— æ³•è¯†åˆ«å½“å‰ç”¨æˆ·" });
                 }
-                
-                // ÑéÖ¤ÓÃ»§È¨ÏŞ
+
+                // éªŒè¯ç”¨æˆ·æƒé™
                 bool canExport = await _userService.HasPermissionAsync(userId, SystemPermissions.ExportData);
                 if (!canExport)
                 {
                     return Forbid();
                 }
-                
-                // ÑéÖ¤ÇëÇóÊı¾İ
+
+                // éªŒè¯è¯·æ±‚æ•°æ®
                 if (query == null || query.Tables == null || query.Tables.Count == 0)
                 {
-                    return BadRequest(new { error = "ÇëÇóÊı¾İÎŞĞ§£¬ÇëÈ·±£ÒÑÑ¡Ôñ±í" });
+                    return BadRequest(new { error = "è¯·æ±‚æ•°æ®æ— æ•ˆï¼Œè¯·ç¡®ä¿å·²é€‰æ‹©è¡¨" });
                 }
-                
-                Console.WriteLine($"¿ªÊ¼µ¼³öPDF: ±íÊıÁ¿:{query.Tables.Count}, ÁĞÊıÁ¿:{query.Columns?.Count ?? 0}");
-                
-                // È·±£Columns²»Îªnull
+
+                Console.WriteLine($"å¼€å§‹å¯¼å‡ºPDF: è¡¨æ•°é‡:{query.Tables.Count}, åˆ—æ•°é‡:{query.Columns?.Count ?? 0}");
+
+                // ç¡®ä¿Columnsä¸ä¸ºnull
                 if (query.Columns == null)
                 {
                     query.Columns = new List<string>();
                 }
-                
-                // Ö´ĞĞ²éÑ¯
+
+                // æ‰§è¡ŒæŸ¥è¯¢
                 var dataTable = await _queryBuilderService.ExecuteQueryAsync(
                     query.Tables,
                     query.Columns,
@@ -316,42 +358,42 @@ namespace BZKQuerySystem.Web.Controllers
                     query.OrderBy ?? new List<string>(),
                     query.Parameters ?? new Dictionary<string, object>()
                 );
-                
-                Console.WriteLine($"²éÑ¯Ö´ĞĞÍê³É£¬»ñÈ¡µ½{dataTable.Rows.Count}ÌõÊı¾İ£¬¿ªÊ¼µ¼³öPDF");
 
-                // µ¼³öPDF
-                string reportTitle = !string.IsNullOrEmpty(query.QueryName) ? query.QueryName : "²éÑ¯±¨±í";
-                
+                Console.WriteLine($"æŸ¥è¯¢æ‰§è¡Œå®Œæˆï¼Œè·å–åˆ°{dataTable.Rows.Count}è¡Œæ•°æ®ï¼Œå¼€å§‹ç”ŸæˆPDF");
+
+                // ç”ŸæˆPDF
+                string reportTitle = !string.IsNullOrEmpty(query.QueryName) ? query.QueryName : "æŸ¥è¯¢ç»“æœ";
+
                 var pdfOptions = new PdfExportOptions
                 {
                     Title = reportTitle,
-                    Author = "BZK²éÑ¯ÏµÍ³",
+                    Author = "BZKæŸ¥è¯¢ç³»ç»Ÿ",
                     IncludeTimestamp = true,
                     IncludePageNumbers = true,
                     MaxRowsPerPage = 50,
-                    LandscapeOrientation = true  // ÆôÓÃºáÏò²¼¾Ö
+                    LandscapeOrientation = true  // è®¾ç½®æ¨ªå‘å¸ƒå±€
                 };
-                
-                byte[] fileContents = await _pdfExportService.ExportToPdfAsync(dataTable, pdfOptions);
-                
-                Console.WriteLine($"PDFµ¼³öÍê³É£¬ÎÄ¼ş´óĞ¡: {fileContents.Length} ×Ö½Ú");
 
-                // Éú³ÉÎÄ¼şÃû£¨²éÑ¯Ãû³Æ+ÈÕÆÚ£©
+                byte[] fileContents = await _pdfExportService.ExportToPdfAsync(dataTable, pdfOptions);
+
+                Console.WriteLine($"PDFç”Ÿæˆå®Œæˆï¼Œæ–‡ä»¶å¤§å°: {fileContents.Length} å­—èŠ‚");
+
+                // ç”Ÿæˆæ–‡ä»¶åï¼ˆæŸ¥è¯¢åç§°+æ—¥æœŸï¼‰
                 string dateStr = DateTime.Now.ToString("yyyy-MM-dd");
                 string fileName = $"{reportTitle}_{dateStr}.pdf";
-                
-                // ·µ»ØPDFÎÄ¼ş
+
+                // è¿”å›PDFæ–‡ä»¶
                 return File(
-                    fileContents, 
+                    fileContents,
                     "application/pdf",
                     fileName
                 );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"µ¼³öPDFÊ±·¢Éú´íÎó: {ex.Message}");
-                Console.WriteLine($"´íÎó¶ÑÕ»: {ex.StackTrace}");
-                return BadRequest(new { error = $"µ¼³öPDFÊ§°Ü: {ex.Message}" });
+                Console.WriteLine($"å¯¼å‡ºPDFæ—¶å‘ç”Ÿé”™è¯¯: {ex.Message}");
+                Console.WriteLine($"é”™è¯¯å †æ ˆ: {ex.StackTrace}");
+                return BadRequest(new { error = $"å¯¼å‡ºPDFå¤±è´¥: {ex.Message}" });
             }
         }
 
@@ -363,16 +405,16 @@ namespace BZKQuerySystem.Web.Controllers
             {
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 string userName = User.Identity.Name;
-                
-                Console.WriteLine($"SaveQuery: ÓÃ»§ÒÑµÇÂ¼£¬userId: {userId}, ÕıÔÚ±£´æ²éÑ¯ '{model.Name}'");
-                
-                // ¼ì²é²éÑ¯Ãû³ÆÊÇ·ñÒÑ´æÔÚ
+
+                Console.WriteLine($"SaveQuery: ï¿½Ã»ï¿½ï¿½Ñµï¿½Â¼ï¿½ï¿½userId: {userId}, ï¿½ï¿½ï¿½Ú±ï¿½ï¿½ï¿½ï¿½Ñ¯ '{model.Name}'");
+
+                // ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ñ´ï¿½ï¿½ï¿½
                 bool nameExists = await _queryBuilderService.CheckQueryNameExistsAsync(userId, model.Name, model.Id);
                 if (nameExists)
                 {
-                    return BadRequest(new { error = "²éÑ¯Ãû³ÆÒÑ´æÔÚ£¬Çë¸ü¸Ä²éÑ¯Ãû³Æ" });
+                    return BadRequest(new { error = "ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½Ä²ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½" });
                 }
-                
+
                 var query = new SavedQuery
                 {
                     Id = model.Id,
@@ -391,22 +433,22 @@ namespace BZKQuerySystem.Web.Controllers
                 };
 
                 await _queryBuilderService.SaveQueryAsync(query);
-                
-                // ±£´æ²éÑ¯³É¹¦
+
+                // ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½É¹ï¿½
                 var savedQuery = await _queryBuilderService.GetSavedQueryByIdAsync(query.Id);
                 if (savedQuery == null)
                 {
-                    Console.WriteLine($"SaveQuery: ²éÑ¯±£´æÊ§°Ü£¬Çë¼ì²éÊı¾İ¿âÁ¬½Ó: {query.Id} ²éÑ¯");
-                    return BadRequest(new { error = "²éÑ¯±£´æÊ§°Ü£¬Çë¼ì²éÊı¾İ¿âÁ¬½Ó" });
+                    Console.WriteLine($"SaveQuery: ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¿ï¿½ï¿½ï¿½ï¿½ï¿½: {query.Id} ï¿½ï¿½Ñ¯");
+                    return BadRequest(new { error = "ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¿ï¿½ï¿½ï¿½ï¿½ï¿½" });
                 }
-                
-                Console.WriteLine($"SaveQuery: ²éÑ¯±£´æ³É¹¦£¬id: {query.Id}, joinConditions: {savedQuery.JoinConditions}");
-                
+
+                Console.WriteLine($"SaveQuery: ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½id: {query.Id}, joinConditions: {savedQuery.JoinConditions}");
+
                 return Json(new { success = true, id = query.Id });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"±£´æ²éÑ¯Ê±·¢Éú´íÎó: {ex.Message}");
+                Console.WriteLine($"ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -415,53 +457,53 @@ namespace BZKQuerySystem.Web.Controllers
         public async Task<IActionResult> SavedQueries()
         {
             string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            
-            Console.WriteLine($"SavedQueries: ÓÃ»§ÒÑµÇÂ¼£¬userId: {userId}, ÕıÔÚ»ñÈ¡ËùÓĞ²éÑ¯");
-            
-            // »ñÈ¡ÓÃ»§ÔÊĞí·ÃÎÊµÄ±í
+
+            Console.WriteLine($"SavedQueries: ï¿½Ã»ï¿½ï¿½Ñµï¿½Â¼ï¿½ï¿½userId: {userId}, ï¿½ï¿½ï¿½Ú»ï¿½È¡ï¿½ï¿½ï¿½Ğ²ï¿½Ñ¯");
+
+            // ï¿½ï¿½È¡ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÊµÄ±ï¿½
             var tables = await _queryBuilderService.GetAllowedTablesForUserAsync(userId);
-            
-            // »ñÈ¡ÓÃ»§±£´æµÄËùÓĞ²éÑ¯
+
+            // ï¿½ï¿½È¡ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ²ï¿½Ñ¯
             var savedQueries = await _queryBuilderService.GetSavedQueriesAsync(userId);
-            
-            Console.WriteLine($"SavedQueries: »ñÈ¡µ½savedQueries.Count¸ö²éÑ¯");
-            
-            // ¼ì²éÓÃ»§ÊÇ·ñÓĞÈ¨ÏŞ±£´æ²éÑ¯¡¢¹²Ïí²éÑ¯ºÍµ¼³öÊı¾İ
+
+            Console.WriteLine($"SavedQueries: ï¿½ï¿½È¡ï¿½ï¿½savedQueries.Countï¿½ï¿½ï¿½ï¿½Ñ¯");
+
+            // ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ç·ï¿½ï¿½ï¿½È¨ï¿½Ş±ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             bool canSaveQueries = await _userService.HasPermissionAsync(userId, SystemPermissions.SaveQueries);
             bool canShareQueries = await _userService.HasPermissionAsync(userId, SystemPermissions.ShareQueries);
             bool canExportData = await _userService.HasPermissionAsync(userId, SystemPermissions.ExportData);
-            
+
             ViewBag.Tables = tables;
             ViewBag.SavedQueries = savedQueries;
             ViewBag.CanSaveQueries = canSaveQueries;
             ViewBag.CanShareQueries = canShareQueries;
             ViewBag.CanExportData = canExportData;
-            ViewBag.ShowSavedQueries = true; // ÏÔÊ¾ËùÓĞ²éÑ¯
-            
+            ViewBag.ShowSavedQueries = true; // ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ğ²ï¿½Ñ¯
+
             return View("Index");
         }
 
         [HttpGet]
         public async Task<IActionResult> GetSavedQuery(int id)
         {
-            try 
+            try
             {
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return BadRequest(new { error = "ÎŞ·¨Ê¶±ğµ±Ç°ÓÃ»§" });
+                    return BadRequest(new { error = "ï¿½Ş·ï¿½Ê¶ï¿½ï¿½Ç°ï¿½Ã»ï¿½" });
                 }
-                
+
                 var queries = await _queryBuilderService.GetSavedQueriesAsync(userId);
                 var query = queries.FirstOrDefault(q => q.Id == id);
 
                 if (query == null)
                 {
-                    Console.WriteLine($"²éÑ¯ID²»´æÔÚ£¬userId: {userId}, id: {id}");
-                    return NotFound(new { error = $"²éÑ¯ID²»´æÔÚ£¬userId: {userId}, id: {id}" });
+                    Console.WriteLine($"ï¿½ï¿½Ñ¯IDï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½userId: {userId}, id: {id}");
+                    return NotFound(new { error = $"ï¿½ï¿½Ñ¯IDï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½userId: {userId}, id: {id}" });
                 }
 
-                try 
+                try
                 {
                     var viewModel = new SaveQueryViewModel
                     {
@@ -480,14 +522,14 @@ namespace BZKQuerySystem.Web.Controllers
                 }
                 catch (JsonException ex)
                 {
-                    Console.WriteLine($"JSON·´ĞòÁĞ»¯´íÎó: {ex.Message}");
-                    return BadRequest(new { error = $"²éÑ¯·´ĞòÁĞ»¯Ê§°Ü: {ex.Message}" });
+                    Console.WriteLine($"JSONï¿½ï¿½ï¿½ï¿½ï¿½Ğ»ï¿½ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
+                    return BadRequest(new { error = $"ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½Ğ»ï¿½Ê§ï¿½ï¿½: {ex.Message}" });
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"»ñÈ¡²éÑ¯Ê±·¢Éú´íÎó: {ex.Message}");
-                return BadRequest(new { error = $"»ñÈ¡²éÑ¯Ê§°Ü: {ex.Message}" });
+                Console.WriteLine($"ï¿½ï¿½È¡ï¿½ï¿½Ñ¯Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
+                return BadRequest(new { error = $"ï¿½ï¿½È¡ï¿½ï¿½Ñ¯Ê§ï¿½ï¿½: {ex.Message}" });
             }
         }
 
@@ -498,7 +540,7 @@ namespace BZKQuerySystem.Web.Controllers
             try
             {
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-                
+
                 await _queryBuilderService.DeleteSavedQueryAsync(id, userId);
                 return Json(new { success = true });
             }
@@ -514,71 +556,71 @@ namespace BZKQuerySystem.Web.Controllers
         {
             try
             {
-                // ¼ì²éÇëÇóÊı¾İ
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 if (model == null)
                 {
-                    Console.WriteLine("¹²Ïí²éÑ¯Ê±·¢Éú´íÎó: ÇëÇóÊı¾İÎª¿Õ");
-                    return BadRequest(new { error = "ÇëÇóÊı¾İÎª¿Õ" });
+                    Console.WriteLine("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½");
+                    return BadRequest(new { error = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½" });
                 }
-                
+
                 if (model.QueryId <= 0)
                 {
-                    Console.WriteLine($"¹²Ïí²éÑ¯Ê±·¢Éú´íÎó: ²éÑ¯IDÎŞĞ§ {model.QueryId}");
-                    return BadRequest(new { error = "²éÑ¯IDÎŞĞ§" });
+                    Console.WriteLine($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½Ñ¯IDï¿½ï¿½Ğ§ {model.QueryId}");
+                    return BadRequest(new { error = "ï¿½ï¿½Ñ¯IDï¿½ï¿½Ğ§" });
                 }
-                
-                // ¼ì²éÓÃ»§È¨ÏŞ
+
+                // ï¿½ï¿½ï¿½ï¿½Ã»ï¿½È¨ï¿½ï¿½
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 string userName = User.Identity.Name;
-                
+
                 if (model.UserNames == null)
                 {
-                    Console.WriteLine("¹²Ïí²éÑ¯Ê±·¢Éú´íÎó: ÓÃ»§ÁĞ±íÎª¿Õ");
-                    return BadRequest(new { error = "ÓÃ»§ÁĞ±íÎª¿Õ" });
+                    Console.WriteLine("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½Ã»ï¿½ï¿½Ğ±ï¿½Îªï¿½ï¿½");
+                    return BadRequest(new { error = "ï¿½Ã»ï¿½ï¿½Ğ±ï¿½Îªï¿½ï¿½" });
                 }
-                
+
                 if (model.UserNames.Count == 0)
                 {
-                    Console.WriteLine($"ÓÃ»§ {userName} ¹²Ïí²éÑ¯ {model.QueryId} Ê§°Ü£¬Ã»ÓĞÑ¡ÔñÓÃ»§");
+                    Console.WriteLine($"ï¿½Ã»ï¿½ {userName} ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ {model.QueryId} Ê§ï¿½Ü£ï¿½Ã»ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ã»ï¿½");
                 }
                 else
                 {
-                    Console.WriteLine($"ÓÃ»§ {userName} ¹²Ïí²éÑ¯ {model.QueryId} ³É¹¦£¬¹²Ïí¸ø {string.Join(", ", model.UserNames)}");
+                    Console.WriteLine($"ï¿½Ã»ï¿½ {userName} ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ {model.QueryId} ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ {string.Join(", ", model.UserNames)}");
                 }
-                
-                // ¼ì²é²éÑ¯ÊÇ·ñ´æÔÚ
+
+                // ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
                 var query = await _queryBuilderService.GetSavedQueryByIdAsync(model.QueryId);
                 if (query == null)
                 {
-                    Console.WriteLine($"²éÑ¯²»´æÔÚ£¬userId: {userId}, queryId: {model.QueryId}");
-                    return NotFound(new { error = "²éÑ¯²»´æÔÚ" });
+                    Console.WriteLine($"ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½userId: {userId}, queryId: {model.QueryId}");
+                    return NotFound(new { error = "ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" });
                 }
-                
-                // ¼ì²éÓÃ»§È¨ÏŞ
+
+                // ï¿½ï¿½ï¿½ï¿½Ã»ï¿½È¨ï¿½ï¿½
                 if (query.CreatedBy != userName)
                 {
-                    Console.WriteLine($"ÓÃ»§ {userName} Ã»ÓĞÈ¨ÏŞ¹²Ïí²éÑ¯ {model.QueryId}");
-                    return BadRequest(new { error = "ÓÃ»§Ã»ÓĞÈ¨ÏŞ¹²Ïí²éÑ¯" });
+                    Console.WriteLine($"ï¿½Ã»ï¿½ {userName} Ã»ï¿½ï¿½È¨ï¿½Ş¹ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ {model.QueryId}");
+                    return BadRequest(new { error = "ï¿½Ã»ï¿½Ã»ï¿½ï¿½È¨ï¿½Ş¹ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯" });
                 }
-                
-                // ¹²Ïí²éÑ¯
+
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯
                 await _queryBuilderService.ShareQueryAsync(model.QueryId, userId, model.UserNames);
-                
+
                 if (model.UserNames.Count == 0)
                 {
-                    Console.WriteLine($"²éÑ¯ {model.QueryId} ¹²Ïí³É¹¦£¬Ã»ÓĞ¹²Ïí¸øÆäËûÓÃ»§");
-                    return Json(new { success = true, message = "²éÑ¯¹²Ïí³É¹¦£¬Ã»ÓĞ¹²Ïí¸øÆäËûÓÃ»§" });
+                    Console.WriteLine($"ï¿½ï¿½Ñ¯ {model.QueryId} ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½Ã»ï¿½Ğ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½");
+                    return Json(new { success = true, message = "ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½Ã»ï¿½Ğ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½" });
                 }
                 else
                 {
-                    Console.WriteLine($"²éÑ¯ {model.QueryId} ¹²Ïí³É¹¦£¬¹²Ïí¸ø {string.Join(", ", model.UserNames)}");
-                    return Json(new { success = true, message = "²éÑ¯¹²Ïí³É¹¦£¬¹²Ïí¸øÆäËûÓÃ»§" });
+                    Console.WriteLine($"ï¿½ï¿½Ñ¯ {model.QueryId} ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ {string.Join(", ", model.UserNames)}");
+                    return Json(new { success = true, message = "ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½" });
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"¹²Ïí²éÑ¯Ê±·¢Éú´íÎó: {ex.Message}");
-                Console.WriteLine($"´íÎó¶ÑÕ»: {ex.StackTrace}");
+                Console.WriteLine($"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
+                Console.WriteLine($"ï¿½ï¿½ï¿½ï¿½ï¿½Õ»: {ex.StackTrace}");
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -604,28 +646,29 @@ namespace BZKQuerySystem.Web.Controllers
         {
             try
             {
-                // »ñÈ¡µ±Ç°ÓÃ»§ID
+                // ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½Ã»ï¿½ID
                 string currentUserId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-                
-                // »ñÈ¡ËùÓĞÓÃ»§
+
+                // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½
                 var allUsers = await _userService.GetAllUsersAsync();
-                
-                // »ñÈ¡¿ÉÒÔ¹²Ïí²éÑ¯µÄÓÃ»§
+
+                // ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Ã»ï¿½
                 var usersForSharing = allUsers
                     .Where(u => u.Id != currentUserId && u.IsActive)
-                    .Select(u => new { 
+                    .Select(u => new
+                    {
                         userId = u.Id,
                         userName = u.UserName,
                         displayName = u.DisplayName,
-                        department = u.Department 
+                        department = u.Department
                     })
                     .ToList();
-                
+
                 return Json(usersForSharing);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"»ñÈ¡¿ÉÒÔ¹²Ïí²éÑ¯µÄÓÃ»§Ê±·¢Éú´íÎó: {ex.Message}");
+                Console.WriteLine($"ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Ã»ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -636,36 +679,37 @@ namespace BZKQuerySystem.Web.Controllers
         {
             try
             {
-                // »ñÈ¡µ±Ç°ÓÃ»§ID
+                // ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½Ã»ï¿½ID
                 string userId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-                
-                // ¼ì²é²éÑ¯ÊÇ·ñ´æÔÚ
+
+                // ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
                 var query = await _queryBuilderService.GetSavedQueryByIdAsync(queryId);
                 if (query == null)
                 {
-                    return NotFound(new { error = "²éÑ¯²»´æÔÚ" });
+                    return NotFound(new { error = "ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" });
                 }
-                
-                // ¼ì²éÓÃ»§È¨ÏŞ
+
+                // ï¿½ï¿½ï¿½ï¿½Ã»ï¿½È¨ï¿½ï¿½
                 if (query.CreatedBy != User.Identity.Name && query.UserId != userId)
                 {
                     return Forbid();
                 }
-                
-                // »ñÈ¡²éÑ¯¹²ÏíµÄÓÃ»§
+
+                // ï¿½ï¿½È¡ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½
                 var sharedUsers = await _queryBuilderService.GetQueryShareUsersAsync(queryId);
-                
-                // ¹¹½¨½á¹û¶ÔÏó
-                var result = sharedUsers.Select(u => new { 
-                    userId = u.UserId, 
-                    userName = u.UserName 
+
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+                var result = sharedUsers.Select(u => new
+                {
+                    userId = u.UserId,
+                    userName = u.UserName
                 }).ToList();
-                
+
                 return Json(result);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"»ñÈ¡²éÑ¯¹²ÏíµÄÓÃ»§Ê±·¢Éú´íÎó: {ex.Message}");
+                Console.WriteLine($"ï¿½ï¿½È¡ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
                 return BadRequest(new { error = ex.Message });
             }
         }
@@ -703,4 +747,4 @@ namespace BZKQuerySystem.Web.Controllers
         public int QueryId { get; set; }
         public List<string> UserNames { get; set; }
     }
-} 
+}

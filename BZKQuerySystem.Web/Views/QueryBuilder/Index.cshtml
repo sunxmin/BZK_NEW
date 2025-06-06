@@ -2321,9 +2321,16 @@
             const hintElement = $('#columnSortHint');
 
             if (selectedColumns.length === 0) {
-                container.html('<p class="text-muted">请选择列...</p>');
+                // 当没有选择列时的提示
+                if (selectedTables.length > 0) {
+                    container.html('<p class="text-info"><i class="fas fa-info-circle me-2"></i>未选择具体列，将查询表中所有列</p>');
+                } else {
+                    container.html('<p class="text-muted">请先添加表格，然后选择要查询的列...</p>');
+                }
                 $('#btnClearColumns').prop('disabled', true);
-                hintElement.addClass('d-none'); // 隐藏提示
+                if (hintElement.length) {
+                    hintElement.hide();
+                }
                 return;
             }
 
@@ -2769,33 +2776,80 @@
             const tableName = $(this).data('name');
             const displayName = $(this).find('h5').text();
 
+            console.log(`用户选择表格: ${tableName}`);
+
         // 检查是否已经被选择
         if (selectedTables.some(t => t === tableName)) {
-                alert('该表已被选择');
+                ToastNotification.warning('该表已被选择');
                 return;
             }
 
         // 添加表到选择列表 - 修改为字符串格式
         selectedTables.push(tableName);
+            console.log('当前选择的表:', selectedTables);
 
             // 更新UI显示
             updateSelectedTablesUI();
 
-        // 获取列信息
-            fetchTableColumns(tableName);
+            // 显示加载提示
+            ToastNotification.info(`正在准备表格 ${tableName}...`);
+
+        // 获取列信息 - 确保在列信息加载完成后再启用查询功能
+            fetchTableColumns(tableName).then(() => {
+                // 列信息加载完成后，更新UI和启用控件
+                updateColumnsDropdown(tableName);
+                enableQueryControls();
+                updateSqlPreview();
+
+                                                // 对于单表查询，不自动添加列，让后端使用SELECT *
+                // 这样可以显示表中的所有列，符合原本的逻辑
+                if (selectedTables.length === 1 && selectedColumns.length === 0) {
+                    const columns = allTableColumns[tableName];
+                    console.log(`表 ${tableName} 的列信息:`, columns);
+                    console.log('单表查询模式：不自动选择列，将使用 SELECT * 查询所有列');
+
+                    // 不添加具体列，保持selectedColumns为空
+                    // 后端会自动使用SELECT *显示所有列
+                    updateSelectedColumnsUI();
+                    updateSqlPreview();
+                }
+            }).catch(error => {
+                console.error("获取列信息失败:", error);
+                alert('获取表格列信息失败，请重试');
+            });
 
         // 启用相关按钮
             $('#btnClearTables').prop('disabled', false);
-
-        // 更新表和列下拉框
-                updateColumnsDropdown(tableName);
-
-        // 启用查询控件
-        enableQueryControls();
-
-        // 更新SQL预览
-        updateSqlPreview();
     }
+
+        // 添加诊断功能
+        function diagnoseQueryState() {
+            console.log('=== 查询状态诊断 ===');
+            console.log('选择的表:', selectedTables);
+            console.log('选择的列:', selectedColumns);
+            console.log('WHERE条件:', whereConditions);
+            console.log('ORDER BY:', orderByItems);
+            console.log('JOIN条件:', joinConditions);
+
+            console.log('表的列信息缓存:');
+            selectedTables.forEach(table => {
+                console.log(`  ${table}:`, allTableColumns[table] || '未加载');
+            });
+
+            console.log('=== 诊断结束 ===');
+
+            return {
+                tables: selectedTables,
+                columns: selectedColumns,
+                tableColumns: allTableColumns,
+                conditions: whereConditions,
+                orderBy: orderByItems,
+                joins: joinConditions
+            };
+        }
+
+        // 在全局添加诊断函数，方便调试
+        window.diagnoseQuery = diagnoseQueryState;
 
         // 删除表
         function removeTable(index) {
@@ -3628,20 +3682,44 @@
                 }
                 columnsSelect.empty().append('<option value="">正在加载列信息...</option>').prop('disabled', true);
 
+                // 显示表格加载状态
+                ToastNotification.info(`正在加载表 ${tableName} 的列信息...`);
+
                 $.ajax({
                     url: `/QueryBuilder/GetColumns?tableName=${encodeURIComponent(tableName)}`,
                     method: 'GET',
+                    timeout: 10000, // 10秒超时
                     success: function(columns) {
+                        console.log(`成功加载表 ${tableName} 的列信息:`, columns);
+
+                        // 验证返回的列数据
+                        if (!columns || !Array.isArray(columns) || columns.length === 0) {
+                            console.warn(`表 ${tableName} 没有可用的列信息`);
+                            ToastNotification.warning(`表 ${tableName} 没有可用的列信息`);
+                            allTableColumns[tableName] = [];
+                        } else {
                         // 缓存列信息
                         allTableColumns[tableName] = columns;
+                            ToastNotification.success(`成功加载表 ${tableName} 的 ${columns.length} 个列`);
+                        }
 
                         // 更新UI
-                        updateColumnsUI(tableName, columns);
-                        resolve(columns);
+                        updateColumnsUI(tableName, allTableColumns[tableName]);
+                        resolve(allTableColumns[tableName]);
                     },
                     error: function(xhr, status, error) {
-                        console.error("获取列信息失败:", error);
-                        alert('获取表列信息失败: ' + error);
+                        console.error(`获取表 ${tableName} 列信息失败:`, error);
+
+                        let errorMessage = '获取表列信息失败';
+                        if (xhr.status === 404) {
+                            errorMessage = `表 ${tableName} 不存在或无访问权限`;
+                        } else if (xhr.status === 500) {
+                            errorMessage = '服务器内部错误，请稍后重试';
+                        } else if (status === 'timeout') {
+                            errorMessage = '加载超时，请检查网络连接';
+                        }
+
+                        ToastNotification.error(errorMessage);
 
                         // 清空并显示错误
                         if (columnsSelect.hasClass("select2-hidden-accessible")) {
@@ -3649,7 +3727,7 @@
                         }
                         columnsSelect.empty().append('<option value="">加载列失败</option>').prop('disabled', true);
 
-                        reject(error);
+                        reject(new Error(errorMessage));
                     }
                 });
             });
@@ -4346,6 +4424,60 @@
                 return;
             }
 
+                        // 验证数据完整性
+            const missingColumns = selectedTables.filter(table => !allTableColumns[table]);
+            if (missingColumns.length > 0) {
+                console.warn('部分表的列信息未加载:', missingColumns);
+                ToastNotification.warning('正在加载表结构信息，请稍后重试...');
+
+                // 尝试加载缺失的列信息
+                Promise.all(missingColumns.map(table => fetchTableColumns(table)))
+                    .then(() => {
+                        console.log('所有表的列信息已加载完成，重新执行查询');
+                        // 重新执行查询
+                        executeQuery();
+                    })
+                    .catch(error => {
+                        console.error('加载列信息失败:', error);
+                        ToastNotification.error('加载表结构信息失败，请刷新页面重试');
+                    });
+                return;
+            }
+
+            // 简单的数据验证
+            function validateQueryData() {
+                if (!selectedTables || selectedTables.length === 0) {
+                    return { valid: false, message: '请选择至少一个表' };
+                }
+
+                // 检查表名格式
+                for (let table of selectedTables) {
+                    if (!table || typeof table !== 'string' || table.trim() === '') {
+                        return { valid: false, message: `表名格式错误: ${table}` };
+                    }
+                }
+
+                // 如果有列，检查列格式
+                if (selectedColumns.length > 0) {
+                    for (let col of selectedColumns) {
+                        if (!col || (typeof col !== 'string' && typeof col !== 'object')) {
+                            return { valid: false, message: `列格式错误: ${col}` };
+                        }
+                    }
+                }
+
+                return { valid: true };
+            }
+
+            const validation = validateQueryData();
+            if (!validation.valid) {
+                console.error('数据验证失败:', validation.message);
+                ToastNotification.error(validation.message);
+                ProgressIndicator.hide();
+                ButtonManager.removeLoading('#btnExecuteQuery');
+                return;
+            }
+
             // 显示进度指示器
             ProgressIndicator.show();
 
@@ -4359,31 +4491,69 @@
             const page = currentPage;
             const size = parseInt($('#pageSizeSelector').val(), 10) || pageSize;
 
+            // 确保列数据格式正确
+            const processedColumns = selectedColumns.length > 0 ?
+                selectedColumns.map(col => {
+                    if (typeof col === 'object' && col !== null) {
+                        return col.fullName || col.FullName || `${col.tableName}.${col.columnName}`;
+                    }
+                    return String(col);
+                }).filter(col => col && col.trim() !== '') : [];
+
+            console.log('处理后的列数据:', processedColumns);
+
             // 准备查询数据
             const queryData = {
-                Tables: selectedTables,
-                Columns: selectedColumns.length > 0 ?
-                    selectedColumns.map(col => (typeof col === 'object' && col !== null) ? col.fullName : col) :
-                    [], // 传递空数组，后端将自动使用所有列
+                Tables: selectedTables.filter(table => table && table.trim() !== ''),
+                Columns: processedColumns,
                 WhereConditions: whereConditions.map(cond => {
                     if (typeof cond === 'object' && cond !== null) {
                         // 将条件对象序列化为JSON字符串，包含连接类型信息
                         return JSON.stringify(cond);
                     }
                     return cond.sql || cond;
-                }),
+                }).filter(cond => cond && cond.trim() !== ''),
                 OrderBy: orderByItems.map(item => {
                     if (typeof item === 'object' && item !== null) {
                         return `${item.column} ${item.direction}`;
                     }
                     return item;
-                }),
-                JoinConditions: joinConditions.map(jc => (typeof jc === 'object' && jc !== null) ? jc.fullCondition : jc),
+                }).filter(item => item && item.trim() !== ''),
+                JoinConditions: joinConditions.map(jc => {
+                    if (typeof jc === 'object' && jc !== null) {
+                        return jc.fullCondition || jc;
+                    }
+                    return jc;
+                }).filter(jc => jc && jc.trim() !== ''),
                 PageNumber: page,
                 PageSize: size
             };
 
-            console.log("执行查询数据:", queryData);
+            // 验证查询数据
+            if (!queryData.Tables || queryData.Tables.length === 0) {
+                ToastNotification.error('请选择至少一个表');
+                ProgressIndicator.hide();
+                ButtonManager.removeLoading('#btnExecuteQuery');
+                return;
+            }
+
+            console.log("=== 执行查询调试信息 ===");
+            console.log("选择的表:", selectedTables);
+            console.log("选择的列(原始):", selectedColumns);
+            console.log("处理后的列:", processedColumns);
+            console.log("WHERE条件:", whereConditions);
+            console.log("排序条件:", orderByItems);
+            console.log("JOIN条件:", joinConditions);
+            console.log("最终查询数据:", queryData);
+            console.log("=============================");
+
+            // 调试信息
+            if (queryData.Columns.length === 0) {
+                console.log("注意：没有指定列，将使用SELECT *显示表中所有列");
+                ToastNotification.info('正在查询表中所有列...');
+            } else {
+                console.log(`指定了 ${queryData.Columns.length} 个列`);
+            }
 
             // 执行查询
             $.ajax({
@@ -4422,7 +4592,12 @@
                     addToQueryHistory(queryDataForHistory);
                 },
                 error: function(xhr, status, error) {
-                    console.error("执行查询失败:", error);
+                    console.error("执行查询失败:", {
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
 
                     // 隐藏进度指示器
                     ProgressIndicator.hide();
@@ -4431,24 +4606,70 @@
                     ButtonManager.removeLoading('#btnExecuteQuery');
 
                     let errorMsg = '执行查询失败';
+                    let debugInfo = '';
 
                     try {
                         if (xhr.responseJSON && xhr.responseJSON.error) {
                             errorMsg = xhr.responseJSON.error;
                         } else if (xhr.responseText) {
+                            try {
                             const errorObj = JSON.parse(xhr.responseText);
                             if (errorObj.error) {
                                 errorMsg = errorObj.error;
                             }
+                            } catch (parseError) {
+                                // 如果不是JSON，显示部分原始响应
+                                if (xhr.responseText.length > 100) {
+                                    debugInfo = xhr.responseText.substring(0, 100) + '...';
                         } else {
-                            errorMsg = error;
+                                    debugInfo = xhr.responseText;
+                                }
+                            }
                         }
+
+                        // 根据HTTP状态码提供更友好的错误信息
+                        if (xhr.status === 400) {
+                            errorMsg = '请求数据格式错误：' + errorMsg;
+                        } else if (xhr.status === 401) {
+                            errorMsg = '身份验证失败，请重新登录';
+                        } else if (xhr.status === 403) {
+                            errorMsg = '没有权限执行此查询';
+                        } else if (xhr.status === 404) {
+                            errorMsg = '查询服务不可用';
+                        } else if (xhr.status === 500) {
+                            errorMsg = '服务器内部错误：' + errorMsg;
+                        } else if (status === 'timeout') {
+                            errorMsg = '查询超时，请简化查询条件或稍后重试';
+                        } else if (status === 'abort') {
+                            errorMsg = '查询被取消';
+                        } else if (xhr.status === 0) {
+                            errorMsg = '网络连接失败，请检查网络设置';
+                        }
+
+                        if (debugInfo) {
+                            console.error('服务器响应详情:', debugInfo);
+                        }
+
                     } catch (e) {
-                        errorMsg = error;
+                        console.error('处理错误响应时发生异常:', e);
+                        errorMsg = '未知错误：' + error;
                     }
 
                     // 显示错误消息
-                    ToastNotification.error(errorMsg, 6000);
+                    ToastNotification.error(errorMsg, 8000);
+
+                    // 如果是数据相关错误，提供一些调试建议
+                    if (xhr.status === 400) {
+                        console.log('调试建议：');
+                        console.log('1. 检查选择的表是否存在');
+                        console.log('2. 检查列信息是否正确加载');
+                        console.log('3. 检查WHERE条件格式');
+                        console.log('当前查询状态:', {
+                            tables: selectedTables,
+                            columns: selectedColumns,
+                            conditions: whereConditions
+                        });
+                    }
                 }
             });
         }

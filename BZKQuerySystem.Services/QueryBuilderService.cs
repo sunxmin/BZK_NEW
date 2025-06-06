@@ -19,9 +19,9 @@ namespace BZKQuerySystem.Services
         private readonly UserService? _userService;
         // 第二阶段优化：集成实时通信服务
         private readonly IRealTimeNotificationService? _notificationService;
-        
+
         // 系统表名列表，这些表不应该向前端显示
-        private static readonly List<string> _systemTables = new List<string> 
+        private static readonly List<string> _systemTables = new List<string>
         {
             "__EFMigrationsHistory",
             "AllowedTables",
@@ -37,8 +37,8 @@ namespace BZKQuerySystem.Services
         };
 
         public QueryBuilderService(
-            BZKQueryDbContext dbContext, 
-            string connectionString, 
+            BZKQueryDbContext dbContext,
+            string connectionString,
             UserService? userService = null,
             IRealTimeNotificationService? notificationService = null)
         {
@@ -83,7 +83,7 @@ namespace BZKQuerySystem.Services
                     {
                         bool isAdmin = await _userService.HasPermissionAsync(userId, SystemPermissions.SystemAdmin);
                         bool canViewAllTables = await _userService.HasPermissionAsync(userId, SystemPermissions.ViewAllTables);
-                        
+
                         if (isAdmin || canViewAllTables)
                         {
                             // 通过直接SQL查询获取表
@@ -93,12 +93,12 @@ namespace BZKQuerySystem.Services
                                 var tables = await GetDatabaseTablesAsync(connection);
                                 var views = await GetDatabaseViewsAsync(connection);
                                 var result = new List<TableInfo>();
-                                
+
                                 // 添加表
                                 foreach (var tableName in tables)
                                 {
-                                    result.Add(new TableInfo 
-                                    { 
+                                    result.Add(new TableInfo
+                                    {
                                         TableName = tableName,
                                         DisplayName = tableName,
                                         Description = $"数据表: {tableName}",
@@ -106,12 +106,12 @@ namespace BZKQuerySystem.Services
                                         Columns = new List<ColumnInfo>()
                                     });
                                 }
-                                
+
                                 // 添加视图
                                 foreach (var viewName in views)
                                 {
-                                    result.Add(new TableInfo 
-                                    { 
+                                    result.Add(new TableInfo
+                                    {
                                         TableName = viewName,
                                         DisplayName = viewName,
                                         Description = $"预览视图: {viewName}",
@@ -119,15 +119,15 @@ namespace BZKQuerySystem.Services
                                         Columns = new List<ColumnInfo>()
                                     });
                                 }
-                                
+
                                 return result;
                             }
                         }
                     }
-                    catch (Exception ex) 
-                    { 
+                    catch (Exception ex)
+                    {
                         Console.WriteLine($"权限获取失败: {ex.Message}");
-                        /* 权限获取中可能出现的异常 */ 
+                        /* 权限获取中可能出现的异常 */
                     }
                 }
 
@@ -160,17 +160,17 @@ namespace BZKQuerySystem.Services
                     {
                         // TableInfos可能不存在，需要确认表是否为视图
                         var result = new List<TableInfo>();
-                        
+
                         // 使用数据库连接直接查询系统表
                         using (var connection = new SqlConnection(_connectionString))
                         {
                             await connection.OpenAsync();
-                            
+
                             // 获取数据库中的表
                             var allTables = await GetDatabaseTablesAsync(connection);
                             // 获取数据库中的视图
                             var allViews = await GetDatabaseViewsAsync(connection);
-                            
+
                             foreach (var tableName in allowedTableNames)
                             {
                                 // 系统表
@@ -178,9 +178,9 @@ namespace BZKQuerySystem.Services
                                 {
                                     // 确认是否为视图
                                     bool isView = allViews.Contains(tableName);
-                                    
-                                    result.Add(new TableInfo 
-                                    { 
+
+                                    result.Add(new TableInfo
+                                    {
                                         TableName = tableName,
                                         DisplayName = tableName,
                                         Description = isView ? $"预览视图: {tableName}" : $"数据表: {tableName}",
@@ -232,11 +232,11 @@ namespace BZKQuerySystem.Services
                 {
                     await connection.OpenAsync();
                     var columns = await GetTableColumnsAsync(connection, tableName);
-                    
+
                     // 转换为ColumnInfo
                     var result = new List<ColumnInfo>();
                     int tempId = 1; // 临时ID从1开始
-                    
+
                     foreach (var column in columns)
                     {
                         result.Add(new ColumnInfo
@@ -251,7 +251,7 @@ namespace BZKQuerySystem.Services
                             Description = $": {column.ColumnName}"
                         });
                     }
-                    
+
                     // 可能出现的异常
                     try
                     {
@@ -264,19 +264,19 @@ namespace BZKQuerySystem.Services
                                 DisplayName = tableName,
                                 Description = $"数据表: {tableName}"
                             };
-                            
+
                             _dbContext.TableInfos.Add(tableInfo);
                             await _dbContext.SaveChangesAsync();
-                            
+
                             // 更新表信息ID
                             foreach (var columnInfo in result)
                             {
                                 columnInfo.TableId = tableInfo.Id;
                                 _dbContext.ColumnInfos.Add(columnInfo);
                             }
-                            
+
                             await _dbContext.SaveChangesAsync();
-                            
+
                             // 获取表信息
                             return await _dbContext.ColumnInfos
                                 .Where(c => c.TableId == tableInfo.Id)
@@ -289,7 +289,7 @@ namespace BZKQuerySystem.Services
                         Console.WriteLine($"获取列信息失败: {ex.Message}");
                         // 使用临时信息
                     }
-                    
+
                     return result;
                 }
             }
@@ -316,7 +316,7 @@ namespace BZKQuerySystem.Services
             // 生成查询ID用于实时通知
             string queryId = Guid.NewGuid().ToString();
             string userId = _userService?.GetCurrentUserId() ?? "anonymous";
-            
+
             try
             {
                 // 第二阶段优化：发送查询开始通知
@@ -350,12 +350,26 @@ namespace BZKQuerySystem.Services
 
                 // 构建SQL查询
                 string sqlQuery = BuildSqlQuery(tables, columns, joinConditions, whereConditions, orderBy);
-                
-                // 处理分页
+
+                // 处理分页 - OFFSET/FETCH 需要 ORDER BY 子句
                 if (pageSize.HasValue && pageNumber.HasValue && pageSize.Value > 0 && pageNumber.Value > 0)
                 {
+                    // 检查是否有ORDER BY子句，如果没有则添加默认排序
+                    if (orderBy == null || orderBy.Count == 0)
+                    {
+                        // 为分页添加默认排序（使用第一个表的主键或第一列）
+                        Console.WriteLine("分页查询缺少ORDER BY子句，添加默认排序");
+
+                        // 尝试使用表的第一列作为排序字段
+                        string defaultOrderColumn = $"[{tables[0]}].[{GetFirstColumnOfTable(tables[0])}]";
+                        sqlQuery += $"\r\nORDER BY {defaultOrderColumn}";
+                        Console.WriteLine($"使用默认排序字段: {defaultOrderColumn}");
+                    }
+
                     int offset = (pageNumber.Value - 1) * pageSize.Value;
                     sqlQuery += $"\r\nOFFSET {offset} ROWS FETCH NEXT {pageSize.Value} ROWS ONLY";
+
+                    Console.WriteLine($"添加分页: OFFSET {offset} ROWS FETCH NEXT {pageSize.Value} ROWS ONLY");
                 }
 
                 // 第二阶段优化：发送执行前准备完成通知
@@ -409,7 +423,7 @@ namespace BZKQuerySystem.Services
                         CompletedAt = DateTime.Now
                     });
                 }
-                
+
                 throw;
             }
         }
@@ -446,10 +460,10 @@ namespace BZKQuerySystem.Services
                     }
                 }
                 Console.WriteLine("================================");
-                
+
                 // 使用SQL构建COUNT查询
                 string countSql = "SELECT COUNT(*) FROM " + FormatSqlIdentifier(tables[0]);
-                
+
                 // JOIN部分
                 if (joinConditions != null && joinConditions.Count > 0)
                 {
@@ -471,12 +485,12 @@ namespace BZKQuerySystem.Services
                         }
                     }
                 }
-                
+
                 // 添加WHERE条件
                 if (whereConditions != null && whereConditions.Count > 0)
                 {
                     countSql += " WHERE ";
-                    
+
                     for (int i = 0; i < whereConditions.Count; i++)
                     {
                         try
@@ -491,7 +505,7 @@ namespace BZKQuerySystem.Services
                                 }
                                 countSql += $" {connector} ";
                             }
-                            
+
                             // 处理WHERE条件
                             string processedCondition = ProcessWhereCondition(whereConditions[i]);
                             countSql += processedCondition;
@@ -504,15 +518,15 @@ namespace BZKQuerySystem.Services
                         }
                     }
                 }
-                
+
                 // 输出调试信息
                 Console.WriteLine($"生成的COUNT SQL: {countSql}");
-                
+
                 // 执行查询
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    
+
                     using (var command = new SqlCommand(countSql, connection))
                     {
                         // 添加参数
@@ -523,13 +537,13 @@ namespace BZKQuerySystem.Services
                                 try
                                 {
                                     string paramName = param.Key;
-                                    
+
                                     // 确保参数名格式正确
                                     if (!paramName.StartsWith("@"))
                                     {
                                         paramName = "@" + paramName;
                                     }
-                                    
+
                                     // 清理参数名中的特殊字符
                                     paramName = paramName.Replace(" ", "_")
                                                       .Replace("#", "_")
@@ -537,13 +551,13 @@ namespace BZKQuerySystem.Services
                                                       .Replace("$", "_")
                                                       .Replace("|", "_")
                                                       .Replace("-", "_");
-                                    
+
                                     // 确保只有一个@前缀
                                     if (paramName.StartsWith("@@"))
                                     {
                                         paramName = paramName.Substring(1);
                                     }
-                                    
+
                                     command.Parameters.AddWithValue(paramName, param.Value ?? DBNull.Value);
                                     Console.WriteLine($"添加参数: {paramName} = {param.Value}");
                                 }
@@ -553,7 +567,7 @@ namespace BZKQuerySystem.Services
                                 }
                             }
                         }
-                        
+
                         var result = await command.ExecuteScalarAsync();
                         return Convert.ToInt32(result);
                     }
@@ -565,6 +579,56 @@ namespace BZKQuerySystem.Services
                 Console.WriteLine($"错误堆栈: {ex.StackTrace}");
                 return -1;
             }
+        }
+
+        /// <summary>
+        /// 获取表的第一列名称（用于默认排序）
+        /// </summary>
+        private string GetFirstColumnOfTable(string tableName)
+        {
+            try
+            {
+                // 尝试从缓存的表信息中获取第一列
+                var table = _dbContext.TableInfos
+                    .Include(t => t.Columns)
+                    .FirstOrDefault(t => t.TableName == tableName);
+
+                if (table?.Columns?.Any() == true)
+                {
+                    var firstColumn = table.Columns.OrderBy(c => c.ColumnName).FirstOrDefault();
+                    if (firstColumn != null)
+                    {
+                        return firstColumn.ColumnName;
+                    }
+                }
+
+                // 如果没有找到，使用通用的第一列名
+                // 可以通过直接查询数据库获取
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    using (var command = new SqlCommand($@"
+                        SELECT TOP 1 COLUMN_NAME
+                        FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_NAME = @tableName
+                        ORDER BY ORDINAL_POSITION", connection))
+                    {
+                        command.Parameters.AddWithValue("@tableName", tableName);
+                        var result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            return result.ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"获取表 {tableName} 第一列失败: {ex.Message}");
+            }
+
+            // 如果都失败了，返回一个通用的列名
+            return "1"; // 使用列序号作为后备选项
         }
 
         /// <summary>
@@ -612,7 +676,7 @@ namespace BZKQuerySystem.Services
                     throw new ArgumentException($"无效的SQL标识符: '{identifier}'");
                 }
             }
-            
+
             // 如果没有点，则直接格式化
             return $"[{identifier}]";
         }
@@ -636,7 +700,7 @@ namespace BZKQuerySystem.Services
 
             // SELECT部分
             sqlBuilder.Append("SELECT ");
-            
+
             // 如果columns为空，则使用SELECT *
             if (columns == null || columns.Count == 0)
             {
@@ -645,20 +709,20 @@ namespace BZKQuerySystem.Services
             else
             {
                 var selectColumnExpressions = new List<string>();
-                
+
                 // 检查是否为相同列
                 var columnShortNames = new Dictionary<string, int>();
                 foreach (var colIdentifier in columns)
                 {
-                    string shortName = colIdentifier.Contains('.') ? colIdentifier.Split(new[] {'.'}, 2).Last() : colIdentifier;
+                    string shortName = colIdentifier.Contains('.') ? colIdentifier.Split(new[] { '.' }, 2).Last() : colIdentifier;
                     columnShortNames[shortName] = columnShortNames.ContainsKey(shortName) ? columnShortNames[shortName] + 1 : 1;
                 }
-                
+
                 foreach (var colIdentifier in columns) // 例如 "Table.125j_选择"
                 {
                     string actualIdentifier = colIdentifier;
-                    string shortName = colIdentifier.Contains('.') ? colIdentifier.Split(new[] {'.'}, 2).Last() : colIdentifier;
-                    
+                    string shortName = colIdentifier.Contains('.') ? colIdentifier.Split(new[] { '.' }, 2).Last() : colIdentifier;
+
                     // 格式化SQL标识符
                     string alias;
                     if (tables.Count > 1)
@@ -689,7 +753,7 @@ namespace BZKQuerySystem.Services
                         // 使用原始列名作为别名
                         alias = $"[{shortName}]";
                     }
-                    
+
                     // 使用FormatSqlIdentifier格式化SQL标识符
                     selectColumnExpressions.Add($"{FormatSqlIdentifier(actualIdentifier)} AS {alias}");
                 }
@@ -718,14 +782,14 @@ namespace BZKQuerySystem.Services
             if (whereConditions != null && whereConditions.Count > 0)
             {
                 sqlBuilder.Append("WHERE ");
-                
+
                 // 处理第一个条件
                 var processedWhereConditions = whereConditions.Select(ProcessWhereCondition).ToList();
-                
+
                 if (processedWhereConditions.Count > 0)
                 {
                     sqlBuilder.Append(processedWhereConditions[0]);
-                    
+
                     // 使用动态条件
                     for (int i = 1; i < processedWhereConditions.Count; i++)
                     {
@@ -735,7 +799,7 @@ namespace BZKQuerySystem.Services
                         sqlBuilder.Append(processedWhereConditions[i]);
                     }
                 }
-                
+
                 sqlBuilder.Append("\r\n");
             }
 
@@ -837,22 +901,22 @@ namespace BZKQuerySystem.Services
         {
             if (string.IsNullOrEmpty(condition))
                 return condition;
-                
+
             // 检查是否为ASC或DESC
-            bool hasDirection = condition.EndsWith(" ASC", StringComparison.OrdinalIgnoreCase) || 
+            bool hasDirection = condition.EndsWith(" ASC", StringComparison.OrdinalIgnoreCase) ||
                                condition.EndsWith(" DESC", StringComparison.OrdinalIgnoreCase);
-                               
+
             if (hasDirection)
             {
                 // 提取字段和方向
                 int lastSpaceIndex = condition.LastIndexOf(' ');
                 string field = condition.Substring(0, lastSpaceIndex).Trim();
                 string direction = condition.Substring(lastSpaceIndex).Trim();
-                
+
                 // 格式化SQL标识符
                 return FormatSqlIdentifier(field) + " " + direction;
             }
-            
+
             // 如果没有选择列，则返回原始的SQL标识符
             return FormatSqlIdentifier(condition);
         }
@@ -890,7 +954,7 @@ namespace BZKQuerySystem.Services
 
             // 格式化表名
             string formattedTable = FormatSqlIdentifier(table);
-            
+
             // 格式化ON条件
             string formattedOnCondition = ProcessJoinOnCondition(onCondition);
 
@@ -904,11 +968,11 @@ namespace BZKQuerySystem.Services
         {
             if (string.IsNullOrEmpty(onCondition))
                 return onCondition;
-                
+
             // 使用JSON格式处理
             // 使用JSON格式处理
             var comparisonOperators = new[] { ">=", "<=", "<>", "!=", "=", ">", "<" };
-            
+
             foreach (var op in comparisonOperators)
             {
                 int opIndex = onCondition.IndexOf($" {op} ");
@@ -917,16 +981,16 @@ namespace BZKQuerySystem.Services
                     // 提取左边部分和右边部分
                     string leftPart = onCondition.Substring(0, opIndex).Trim();
                     string rightPart = onCondition.Substring(opIndex + op.Length + 2).Trim(); // +2 for spaces around operator
-                    
+
                     // 格式化左边部分
                     string formattedLeftPart = FormatSqlIdentifier(leftPart);
                     string formattedRightPart = FormatSqlIdentifier(rightPart);
-                    
+
                     // 使用操作符
                     return $"{formattedLeftPart} {op} {formattedRightPart}";
                 }
             }
-            
+
             // 如果为空，则返回原始的SQL标识符
             foreach (var op in comparisonOperators)
             {
@@ -936,16 +1000,16 @@ namespace BZKQuerySystem.Services
                     // 提取左边部分和右边部分
                     string leftPart = onCondition.Substring(0, opIndex).Trim();
                     string rightPart = onCondition.Substring(opIndex + op.Length).Trim();
-                    
+
                     // 格式化左边部分
                     string formattedLeftPart = FormatSqlIdentifier(leftPart);
                     string formattedRightPart = FormatSqlIdentifier(rightPart);
-                    
+
                     // 使用操作符
                     return $"{formattedLeftPart} {op} {formattedRightPart}";
                 }
             }
-            
+
             // 如果为空，则返回原始的SQL标识符
             return FormatSqlIdentifier(onCondition);
         }
@@ -957,16 +1021,16 @@ namespace BZKQuerySystem.Services
         {
             if (string.IsNullOrEmpty(joinCondition))
                 return string.Empty;
-                
+
             try
             {
                 Console.WriteLine($"原始JOIN条件: {joinCondition}");
-                
+
                 // 使用更直接的方法处理JOIN条件
                 // 示例输入: "INNER JOIN 19_住院诊断 ON 18_门诊诊断.患者主索引 = 19_住院诊断.患者主索引"
-                
+
                 string processedCondition = joinCondition;
-                
+
                 // 第一步：格式化JOIN后的表名
                 if (processedCondition.Contains(" JOIN "))
                 {
@@ -975,7 +1039,7 @@ namespace BZKQuerySystem.Services
                     {
                         string joinPart = joinParts[0]; // "INNER JOIN 19_住院诊断"
                         string onPart = joinParts[1];   // "18_门诊诊断.患者主索引 = 19_住院诊断.患者主索引"
-                        
+
                         // 处理JOIN部分中的表名
                         var joinWords = joinPart.Split(' ');
                         for (int i = 0; i < joinWords.Length; i++)
@@ -989,12 +1053,12 @@ namespace BZKQuerySystem.Services
                             }
                         }
                         joinPart = string.Join(" ", joinWords);
-                        
+
                         // 第二步：处理ON条件中的所有 table.column 格式
                         // 分割ON条件以找到所有的标识符
                         string[] operators = { " = ", " <> ", " != ", " > ", " < ", " >= ", " <= " };
                         string formattedOnPart = onPart;
-                        
+
                         foreach (var op in operators)
                         {
                             if (formattedOnPart.Contains(op))
@@ -1013,11 +1077,11 @@ namespace BZKQuerySystem.Services
                                 break; // 只处理第一个找到的操作符
                             }
                         }
-                        
+
                         processedCondition = joinPart + " ON " + formattedOnPart;
                     }
                 }
-                
+
                 Console.WriteLine($"处理后JOIN条件: {processedCondition}");
                 return processedCondition;
             }
@@ -1056,7 +1120,7 @@ namespace BZKQuerySystem.Services
                             {
                                 paramName = "@" + paramName;
                             }
-                            
+
                             // 替换SQL中的特殊字符
                             paramName = paramName.Replace(" ", "_")
                                               .Replace("@", "_")
@@ -1065,13 +1129,13 @@ namespace BZKQuerySystem.Services
                                               .Replace("$", "_")
                                               .Replace("|", "_")
                                               .Replace("-", "_");
-                            
+
                             // 添加参数前缀@
                             if (!paramName.StartsWith("@"))
                             {
                                 paramName = "@" + paramName;
                             }
-                            
+
                             command.Parameters.AddWithValue(paramName, param.Value ?? DBNull.Value);
                         }
                     }
@@ -1096,28 +1160,28 @@ namespace BZKQuerySystem.Services
             try
             {
                 Console.WriteLine($"开始获取用户ID为{userId}的查询");
-                
+
                 var queries = new List<SavedQuery>();
-                
+
                 // 使用ADO.NET直接查询用户保存的查询，EF Core作为后备
                 using (var connection = new Microsoft.Data.SqlClient.SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    
+
                     // 获取用户保存的查询
                     var userQueryText = @"
-                        SELECT Id, UserId, Name, Description, SqlQuery, 
+                        SELECT Id, UserId, Name, Description, SqlQuery,
                                TablesIncluded, ColumnsIncluded, FilterConditions,
                                SortOrder, CreatedAt, UpdatedAt, CreatedBy, IsShared,
-                               CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
-                                                WHERE TABLE_NAME = 'SavedQueries' 
+                               CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                                                WHERE TABLE_NAME = 'SavedQueries'
                                                 AND COLUMN_NAME = 'JoinConditions')
                                     THEN JoinConditions
                                     ELSE '[]' END AS JoinConditions
-                        FROM SavedQueries 
+                        FROM SavedQueries
                         WHERE UserId = @userId
                         ORDER BY UpdatedAt DESC";
-                    
+
                     using (var command = new Microsoft.Data.SqlClient.SqlCommand(userQueryText, connection))
                     {
                         command.Parameters.AddWithValue("@userId", userId);
@@ -1129,14 +1193,17 @@ namespace BZKQuerySystem.Services
                                 {
                                     // JoinConditions是否存在
                                     bool hasJoinConditions = false;
-                                    try {
+                                    try
+                                    {
                                         hasJoinConditions = reader.GetOrdinal("JoinConditions") >= 0;
                                         Console.WriteLine($"查询ID {reader.GetInt32(reader.GetOrdinal("Id"))}: JoinConditions存在: {hasJoinConditions}");
-                                    } catch (Exception ex) {
+                                    }
+                                    catch (Exception ex)
+                                    {
                                         Console.WriteLine($"获取JoinConditions失败: {ex.Message}");
                                         hasJoinConditions = false;
                                     }
-                                    
+
                                     var query = new SavedQuery
                                     {
                                         Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -1150,14 +1217,14 @@ namespace BZKQuerySystem.Services
                                         SortOrder = reader.GetString(reader.GetOrdinal("SortOrder")),
                                         // 添加JoinConditions
                                         JoinConditions = hasJoinConditions && !reader.IsDBNull(reader.GetOrdinal("JoinConditions"))
-                                            ? reader.GetString(reader.GetOrdinal("JoinConditions")) 
+                                            ? reader.GetString(reader.GetOrdinal("JoinConditions"))
                                             : "[]",
                                         CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                                         UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt")),
                                         CreatedBy = reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? "未知用户" : reader.GetString(reader.GetOrdinal("CreatedBy")),
                                         IsShared = reader.GetBoolean(reader.GetOrdinal("IsShared"))
                                     };
-                                    
+
                                     Console.WriteLine($"获取查询: ID={query.Id}, 名称={query.Name}, 创建者={query.CreatedBy}, JoinConditions长度={query.JoinConditions?.Length ?? 0}");
                                     queries.Add(query);
                                 }
@@ -1168,21 +1235,21 @@ namespace BZKQuerySystem.Services
                             }
                         }
                     }
-                    
+
                     Console.WriteLine($"数据库中查询数量: {queries.Count}");
-                    
+
                     // 尝试获取共享查询
-                    try 
+                    try
                     {
                         // 检查QueryShares是否存在
                         var commandText = @"
                             IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'QueryShares' AND TABLE_SCHEMA = 'dbo')
                             BEGIN
-                                SELECT q.Id, q.UserId, q.Name, q.Description, q.SqlQuery, 
+                                SELECT q.Id, q.UserId, q.Name, q.Description, q.SqlQuery,
                                        q.TablesIncluded, q.ColumnsIncluded, q.FilterConditions,
                                        q.SortOrder, q.CreatedAt, q.UpdatedAt, q.CreatedBy, q.IsShared,
-                                       CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
-                                                        WHERE TABLE_NAME = 'SavedQueries' 
+                                       CASE WHEN EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                                                        WHERE TABLE_NAME = 'SavedQueries'
                                                         AND COLUMN_NAME = 'JoinConditions')
                                             THEN q.JoinConditions
                                             ELSE '[]' END AS JoinConditions
@@ -1191,7 +1258,7 @@ namespace BZKQuerySystem.Services
                                 WHERE qs.UserId = @userId
                                 ORDER BY q.UpdatedAt DESC
                             END";
-                        
+
                         using (var command = new Microsoft.Data.SqlClient.SqlCommand(commandText, connection))
                         {
                             command.Parameters.AddWithValue("@userId", userId);
@@ -1203,13 +1270,16 @@ namespace BZKQuerySystem.Services
                                     {
                                         // JoinConditions是否存在
                                         bool hasJoinConditions = false;
-                                        try {
+                                        try
+                                        {
                                             hasJoinConditions = reader.GetOrdinal("JoinConditions") >= 0;
-                                        } catch {
+                                        }
+                                        catch
+                                        {
                                             // 不存在，返回false
                                             hasJoinConditions = false;
                                         }
-                                        
+
                                         var query = new SavedQuery
                                         {
                                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
@@ -1223,14 +1293,14 @@ namespace BZKQuerySystem.Services
                                             SortOrder = reader.GetString(reader.GetOrdinal("SortOrder")),
                                             // 添加JoinConditions
                                             JoinConditions = hasJoinConditions && !reader.IsDBNull(reader.GetOrdinal("JoinConditions"))
-                                                ? reader.GetString(reader.GetOrdinal("JoinConditions")) 
+                                                ? reader.GetString(reader.GetOrdinal("JoinConditions"))
                                                 : "[]",
                                             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                                             UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt")),
                                             CreatedBy = reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? "未知用户" : reader.GetString(reader.GetOrdinal("CreatedBy")),
                                             IsShared = reader.GetBoolean(reader.GetOrdinal("IsShared"))
                                         };
-                                        
+
                                         // 检查是否已存在该查询
                                         if (!queries.Any(q => q.Id == query.Id))
                                         {
@@ -1252,7 +1322,7 @@ namespace BZKQuerySystem.Services
                         // 可能出现异常，返回空列表
                     }
                 }
-                
+
                 var orderedQueries = queries.OrderByDescending(q => q.UpdatedAt).ToList();
                 Console.WriteLine($"查询数量: {orderedQueries.Count}");
                 return orderedQueries;
@@ -1295,10 +1365,10 @@ namespace BZKQuerySystem.Services
             {
                 // 检查是否存在相同的查询名称
                 var exists = await _dbContext.SavedQueries
-                    .AnyAsync(q => q.UserId == userId 
-                               && q.Name == queryName 
+                    .AnyAsync(q => q.UserId == userId
+                               && q.Name == queryName
                                && q.Id != currentQueryId);
-                
+
                 return exists;
             }
             catch (Exception ex)
@@ -1359,20 +1429,20 @@ namespace BZKQuerySystem.Services
             {
                 // 确保架构表存在
                 await EnsureSchemaTablesExistAsync();
-                
+
                 Console.WriteLine("开始刷新数据库...");
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    
+
                     // 获取表列表
                     var tables = await GetDatabaseTablesAsync(connection);
                     Console.WriteLine($"表数量: {tables.Count}");
-                    
+
                     // 获取视图列表
                     var views = await GetDatabaseViewsAsync(connection);
                     Console.WriteLine($"视图数量: {views.Count}");
-                    
+
                     // 遍历表
                     foreach (var tableName in tables)
                     {
@@ -1381,7 +1451,7 @@ namespace BZKQuerySystem.Services
                             // 检查是否存在表
                             var existingTable = await _dbContext.TableInfos
                                 .FirstOrDefaultAsync(t => t.TableName == tableName);
-                            
+
                             if (existingTable == null)
                             {
                                 // 添加表
@@ -1392,10 +1462,10 @@ namespace BZKQuerySystem.Services
                                     Description = $"数据表: {tableName}",
                                     IsView = false
                                 };
-                                
+
                                 _dbContext.TableInfos.Add(tableInfo);
                                 await _dbContext.SaveChangesAsync(); // 获取ID
-                                
+
                                 // 获取表的列
                                 var columns = await GetTableColumnsAsync(connection, tableName);
                                 foreach (var column in columns)
@@ -1411,10 +1481,10 @@ namespace BZKQuerySystem.Services
                                         Description = $": {column.ColumnName}, 类型: {column.DataType}",
                                         Table = tableInfo
                                     };
-                                    
+
                                     _dbContext.ColumnInfos.Add(columnInfo);
                                 }
-                                
+
                                 await _dbContext.SaveChangesAsync();
                                 Console.WriteLine($"更新表: {tableName}");
                             }
@@ -1426,14 +1496,14 @@ namespace BZKQuerySystem.Services
                                     existingTable.IsView = false;
                                     await _dbContext.SaveChangesAsync();
                                 }
-                                
+
                                 // 检查是否存在列
                                 var existingColumns = await _dbContext.ColumnInfos
                                     .Where(c => c.TableId == existingTable.Id)
                                     .ToListAsync();
-                                    
+
                                 var currentColumns = await GetTableColumnsAsync(connection, tableName);
-                                
+
                                 // 更新表的列
                                 foreach (var column in currentColumns)
                                 {
@@ -1451,11 +1521,11 @@ namespace BZKQuerySystem.Services
                                             Description = $": {column.ColumnName}, 类型: {column.DataType}",
                                             Table = existingTable
                                         };
-                                        
+
                                         _dbContext.ColumnInfos.Add(columnInfo);
                                     }
                                 }
-                                
+
                                 // 删除多余的列
                                 foreach (var existingColumn in existingColumns)
                                 {
@@ -1465,7 +1535,7 @@ namespace BZKQuerySystem.Services
                                         _dbContext.ColumnInfos.Remove(existingColumn);
                                     }
                                 }
-                                
+
                                 await _dbContext.SaveChangesAsync();
                                 Console.WriteLine($"更新表: {tableName}");
                             }
@@ -1475,7 +1545,7 @@ namespace BZKQuerySystem.Services
                             Console.WriteLine($"{tableName}时出现错误: {ex.Message}");
                         }
                     }
-                    
+
                     // 遍历视图
                     foreach (var viewName in views)
                     {
@@ -1484,7 +1554,7 @@ namespace BZKQuerySystem.Services
                             // 检查是否存在视图
                             var existingView = await _dbContext.TableInfos
                                 .FirstOrDefaultAsync(t => t.TableName == viewName);
-                            
+
                             if (existingView == null)
                             {
                                 // 添加视图
@@ -1495,10 +1565,10 @@ namespace BZKQuerySystem.Services
                                     Description = $"预览视图: {viewName}",
                                     IsView = true
                                 };
-                                
+
                                 _dbContext.TableInfos.Add(viewInfo);
                                 await _dbContext.SaveChangesAsync(); // 获取ID
-                                
+
                                 // 获取视图的列
                                 var columns = await GetTableColumnsAsync(connection, viewName);
                                 foreach (var column in columns)
@@ -1514,10 +1584,10 @@ namespace BZKQuerySystem.Services
                                         Description = $"视图: {column.ColumnName}, 类型: {column.DataType}",
                                         Table = viewInfo
                                     };
-                                    
+
                                     _dbContext.ColumnInfos.Add(columnInfo);
                                 }
-                                
+
                                 await _dbContext.SaveChangesAsync();
                                 Console.WriteLine($"更新视图: {viewName}");
                             }
@@ -1529,14 +1599,14 @@ namespace BZKQuerySystem.Services
                                     existingView.IsView = true;
                                     await _dbContext.SaveChangesAsync();
                                 }
-                                
+
                                 // 检查是否存在列
                                 var existingColumns = await _dbContext.ColumnInfos
                                     .Where(c => c.TableId == existingView.Id)
                                     .ToListAsync();
-                                    
+
                                 var currentColumns = await GetTableColumnsAsync(connection, viewName);
-                                
+
                                 // 更新表的列
                                 foreach (var column in currentColumns)
                                 {
@@ -1554,11 +1624,11 @@ namespace BZKQuerySystem.Services
                                             Description = $"视图: {column.ColumnName}, 类型: {column.DataType}",
                                             Table = existingView
                                         };
-                                        
+
                                         _dbContext.ColumnInfos.Add(columnInfo);
                                     }
                                 }
-                                
+
                                 // 删除多余的列
                                 foreach (var existingColumn in existingColumns)
                                 {
@@ -1568,7 +1638,7 @@ namespace BZKQuerySystem.Services
                                         _dbContext.ColumnInfos.Remove(existingColumn);
                                     }
                                 }
-                                
+
                                 await _dbContext.SaveChangesAsync();
                                 Console.WriteLine($"更新视图: {viewName}");
                             }
@@ -1578,7 +1648,7 @@ namespace BZKQuerySystem.Services
                             Console.WriteLine($"{viewName}时出现错误: {ex.Message}");
                         }
                     }
-                    
+
                     // 删除表的共享列
                     var allExistingObjects = await _dbContext.TableInfos.ToListAsync();
                     foreach (var existingObject in allExistingObjects)
@@ -1589,10 +1659,10 @@ namespace BZKQuerySystem.Services
                             var columns = await _dbContext.ColumnInfos
                                 .Where(c => c.TableId == existingObject.Id)
                                 .ToListAsync();
-                                
+
                             _dbContext.ColumnInfos.RemoveRange(columns);
                             _dbContext.TableInfos.Remove(existingObject);
-                            
+
                             Console.WriteLine($"删除表的共享列: {existingObject.TableName}");
                         }
                         else if (!existingObject.IsView && !tables.Contains(existingObject.TableName))
@@ -1604,18 +1674,18 @@ namespace BZKQuerySystem.Services
                                 var columns = await _dbContext.ColumnInfos
                                     .Where(c => c.TableId == existingObject.Id)
                                     .ToListAsync();
-                                    
+
                                 _dbContext.ColumnInfos.RemoveRange(columns);
                                 _dbContext.TableInfos.Remove(existingObject);
-                                
+
                                 Console.WriteLine($"删除表的列: {existingObject.TableName}");
                             }
                         }
                     }
-                    
+
                     await _dbContext.SaveChangesAsync();
                 }
-                
+
                 Console.WriteLine("数据库刷新完成");
             }
             catch (Exception ex)
@@ -1637,16 +1707,16 @@ namespace BZKQuerySystem.Services
                 {
                     await connection.OpenAsync();
                     bool tablesExist = false;
-                    
+
                     using (var command = new SqlCommand(
-                        @"SELECT COUNT(*) 
-                          FROM INFORMATION_SCHEMA.TABLES 
+                        @"SELECT COUNT(*)
+                          FROM INFORMATION_SCHEMA.TABLES
                           WHERE TABLE_NAME = 'TableInfos' AND TABLE_SCHEMA = 'dbo'", connection))
                     {
                         var result = await command.ExecuteScalarAsync();
                         tablesExist = (int)result > 0;
                     }
-                    
+
                     if (!tablesExist)
                     {
                         // 如果不存在，使用SQL语句创建架构
@@ -1735,17 +1805,17 @@ namespace BZKQuerySystem.Services
         private async Task<List<string>> GetDatabaseTablesAsync(SqlConnection connection)
         {
             var tables = new List<string>();
-            
+
             try
             {
                 // 使用SQL查询获取所有表
                 string query = @"
-                    SELECT t.name 
+                    SELECT t.name
                     FROM sys.tables t
                     JOIN sys.schemas s ON t.schema_id = s.schema_id
                     WHERE s.name = 'dbo' AND t.name NOT LIKE 'sys%' AND t.name NOT LIKE 'dt%'
                     ORDER BY t.name";
-                
+
                 using (var command = new SqlCommand(query, connection))
                 {
                     using (var reader = await command.ExecuteReaderAsync())
@@ -1753,7 +1823,7 @@ namespace BZKQuerySystem.Services
                         while (await reader.ReadAsync())
                         {
                             string tableName = reader.GetString(0);
-                            
+
                             if (!_systemTables.Contains(tableName))
                             {
                                 tables.Add(tableName);
@@ -1766,7 +1836,7 @@ namespace BZKQuerySystem.Services
             {
                 Console.WriteLine($"获取数据库中的所有表失败: {ex.Message}");
             }
-            
+
             return tables;
         }
 
@@ -1774,17 +1844,17 @@ namespace BZKQuerySystem.Services
         private async Task<List<string>> GetDatabaseViewsAsync(SqlConnection connection)
         {
             var views = new List<string>();
-            
+
             try
             {
                 // 使用SQL查询获取所有视图
                 string query = @"
-                    SELECT v.name 
+                    SELECT v.name
                     FROM sys.views v
                     JOIN sys.schemas s ON v.schema_id = s.schema_id
                     WHERE s.name = 'dbo' AND v.name NOT LIKE 'sys%'
                     ORDER BY v.name";
-                
+
                 using (var command = new SqlCommand(query, connection))
                 {
                     using (var reader = await command.ExecuteReaderAsync())
@@ -1801,7 +1871,7 @@ namespace BZKQuerySystem.Services
             {
                 Console.WriteLine($"获取数据库中的所有视图失败: {ex.Message}");
             }
-            
+
             return views;
         }
 
@@ -1832,8 +1902,8 @@ namespace BZKQuerySystem.Services
 
             // 获取表的列信息
             using (var command = new SqlCommand(
-                @"SELECT 
-                    COLUMN_NAME, 
+                @"SELECT
+                    COLUMN_NAME,
                     DATA_TYPE,
                     IS_NULLABLE
                   FROM INFORMATION_SCHEMA.COLUMNS
@@ -1869,13 +1939,13 @@ namespace BZKQuerySystem.Services
         public async Task<List<(string UserId, string UserName)>> GetQueryShareUsersAsync(int queryId)
         {
             var result = new List<(string UserId, string UserName)>();
-            
+
             try
             {
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    
+
                     // 获取查询共享用户
                     using (var command = new SqlCommand(
                         @"SELECT u.Id, u.UserName, u.DisplayName
@@ -1885,7 +1955,7 @@ namespace BZKQuerySystem.Services
                           ORDER BY u.UserName", connection))
                     {
                         command.Parameters.AddWithValue("@QueryId", queryId);
-                        
+
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
@@ -1894,13 +1964,13 @@ namespace BZKQuerySystem.Services
                                 string userName = reader.GetString(1);
                                 // DisplayName处理
                                 string displayName = !reader.IsDBNull(2) ? reader.GetString(2) : userName;
-                                
+
                                 result.Add((userId, string.IsNullOrEmpty(displayName) ? userName : displayName));
                             }
                         }
                     }
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -1920,34 +1990,34 @@ namespace BZKQuerySystem.Services
                 // 检查查询是否存在
                 var query = await _dbContext.SavedQueries
                     .FirstOrDefaultAsync(q => q.Id == queryId);
-                        
+
                 if (query == null)
                 {
                     throw new Exception("查询不存在");
                 }
-                
+
                 // 检查当前用户是否有权限共享查询
                 if (query.CreatedBy != currentUserId && query.UserId != currentUserId)
                 {
                     throw new Exception("当前用户没有权限共享查询");
                 }
-                
+
                 // 使用ADO.NET直接更新查询共享状态
                 using (var connection = new SqlConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    
+
                     // 获取目标用户列表
                     // ȡĿûʹüݵķʽѯ
                     List<(string Id, string UserName)> targetUsers = new List<(string Id, string UserName)>();
-                    
+
                     foreach (string userName in targetUserNames)
                     {
                         using (var command = new SqlCommand(
                             "SELECT Id, UserName FROM Users WHERE UserName = @UserName", connection))
                         {
                             command.Parameters.AddWithValue("@UserName", userName);
-                            
+
                             using (var reader = await command.ExecuteReaderAsync())
                             {
                                 if (await reader.ReadAsync())
@@ -1958,17 +2028,17 @@ namespace BZKQuerySystem.Services
                             }
                         }
                     }
-                    
+
                     // ȡзûб
                     List<(string Id, string UserName)> existingShares = new List<(string Id, string UserName)>();
                     using (var command = new SqlCommand(
-                        @"SELECT u.Id, u.UserName 
+                        @"SELECT u.Id, u.UserName
                           FROM QueryShares qs
                           JOIN Users u ON qs.UserId = u.Id
                           WHERE qs.QueryId = @QueryId", connection))
                     {
                         command.Parameters.AddWithValue("@QueryId", queryId);
-                        
+
                         using (var reader = await command.ExecuteReaderAsync())
                         {
                             while (await reader.ReadAsync())
@@ -1979,12 +2049,12 @@ namespace BZKQuerySystem.Services
                             }
                         }
                     }
-                    
+
                     // ²ѯ״̬κηû
                     bool hasShares = targetUsers.Count > 0;
                     using (var updateCommand = new SqlCommand(
-                        @"UPDATE SavedQueries 
-                          SET IsShared = @IsShared, UpdatedAt = @UpdatedAt 
+                        @"UPDATE SavedQueries
+                          SET IsShared = @IsShared, UpdatedAt = @UpdatedAt
                           WHERE Id = @QueryId;", connection))
                     {
                         updateCommand.Parameters.AddWithValue("@IsShared", hasShares ? 1 : 0);
@@ -1992,7 +2062,7 @@ namespace BZKQuerySystem.Services
                         updateCommand.Parameters.AddWithValue("@QueryId", queryId);
                         await updateCommand.ExecuteNonQueryAsync();
                     }
-                    
+
                     // ķ
                     foreach (var user in targetUsers)
                     {
@@ -2001,10 +2071,10 @@ namespace BZKQuerySystem.Services
                         {
                             continue;
                         }
-                        
+
                         // Ƿѷ
                         bool alreadyShared = existingShares.Any(s => s.Id == user.Id);
-                        
+
                         if (!alreadyShared)
                         {
                             // ·¼
@@ -2020,16 +2090,16 @@ namespace BZKQuerySystem.Services
                             }
                         }
                     }
-                    
+
                     // ҪƳķ
                     var targetUserIds = targetUsers.Select(u => u.Id).ToList();
                     var sharesToRemove = existingShares.Where(s => !targetUserIds.Contains(s.Id)).ToList();
-                    
+
                     foreach (var share in sharesToRemove)
                     {
                         // ɾ¼
                         using (var deleteCommand = new SqlCommand(
-                            @"DELETE FROM QueryShares 
+                            @"DELETE FROM QueryShares
                               WHERE QueryId = @QueryId AND UserId = @UserId", connection))
                         {
                             deleteCommand.Parameters.AddWithValue("@QueryId", queryId);
@@ -2054,4 +2124,4 @@ namespace BZKQuerySystem.Services
             public bool IsPrimaryKey { get; set; }
         }
     }
-} 
+}
